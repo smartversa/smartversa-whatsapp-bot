@@ -43,7 +43,8 @@ def send_whatsapp_message(to, text):
         "text": {"body": text}
     }
 
-    requests.post(url, headers=headers, json=payload)
+    response = requests.post(url, headers=headers, json=payload)
+    print(response.text)
 
 
 @app.route("/")
@@ -91,7 +92,7 @@ def webhook():
 
                     send_whatsapp_message(
                         phone,
-                        "Hi 👋 Welcome to SmartVersa!\n\nLet's get you registered.\n\nPlease enter your full name:"
+                        "Hi 👋 Welcome to SmartVersa!\n\nPlease enter your full name:"
                     )
                     return "OK", 200
 
@@ -108,7 +109,7 @@ def webhook():
 
                 # Step 2 -> Language
                 elif session["step"] == 2:
-                    session["language"] = text
+                    session["language"] = "Hindi" if text == "1" else "English"
                     session["step"] = 3
                     send_whatsapp_message(
                         phone,
@@ -124,9 +125,17 @@ def webhook():
                         "Which program interests you?\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
                     )
 
-                # Step 4 -> Interest + Save
+                # Step 4 -> Interest + Save + Course Details
                 elif session["step"] == 4:
-                    session["interest"] = text
+
+                    if text == "1":
+                        interest = "AI & Data Science"
+                    elif text == "2":
+                        interest = "Digital Marketing"
+                    else:
+                        interest = "Both"
+
+                    session["interest"] = interest
 
                     now = datetime.now()
 
@@ -149,10 +158,73 @@ def webhook():
 
                     sheet.append_row(row)
 
-                    send_whatsapp_message(
-                        phone,
-                        "Thanks for registering ✅\n\nOur team will contact you shortly.\n\nEnroll here:\nhttps://pay.smartversa.in/orderform"
-                    )
+                    if text == "1":
+                        send_whatsapp_message(
+                            phone,
+                            """🤖 AI & Data Science Program
+
+Learn industry-ready skills from scratch.
+
+✔ Python
+✔ Data Analysis
+✔ Machine Learning
+✔ AI Tools
+✔ Real-world Projects
+✔ Internship Certificate
+✔ Resume Building
+✔ Portfolio Building
+
+Perfect for:
+• College Students
+• Freshers
+• Career Switchers
+
+Fee: ₹1299
+
+Enroll now:
+https://pay.smartversa.in/orderform"""
+                        )
+
+                    elif text == "2":
+                        send_whatsapp_message(
+                            phone,
+                            """📈 Digital Marketing Program
+
+Become job/freelance ready with practical skills.
+
+✔ Social Media Marketing
+✔ Meta Ads
+✔ SEO
+✔ Content Creation
+✔ Lead Generation
+✔ Real Client Projects
+✔ Internship Certificate
+✔ Freelancing Guidance
+
+Perfect for:
+• Students
+• Business Owners
+• Freelancers
+
+Fee: ₹4999
+
+Enroll now:
+https://pay.smartversa.in/orderform"""
+                        )
+
+                    else:
+                        send_whatsapp_message(
+                            phone,
+                            """🤖 AI & Data Science + 📈 Digital Marketing
+
+You selected BOTH programs.
+
+AI Course Fee: ₹1299
+Digital Marketing Fee: ₹4999
+
+Enroll now:
+https://pay.smartversa.in/orderform"""
+                        )
 
                     del user_sessions[phone]
 
