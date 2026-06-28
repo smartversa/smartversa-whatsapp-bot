@@ -16,29 +16,16 @@ def home():
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
-    print("\n===== NEW REQUEST =====")
-    print("METHOD:", request.method)
-    print("FULL URL:", request.url)
-    print("ARGS:", request.args)
 
-    # Webhook verification
     if request.method == "GET":
         mode = request.args.get("hub.mode")
         token = request.args.get("hub.verify_token")
         challenge = request.args.get("hub.challenge")
 
-        print("MODE:", mode)
-        print("TOKEN:", token)
-        print("CHALLENGE:", challenge)
-
         if mode == "subscribe" and token == VERIFY_TOKEN:
-            print("✅ VERIFIED SUCCESS")
             return challenge, 200
-        else:
-            print("❌ VERIFICATION FAILED")
-            return "Forbidden", 403
+        return "Forbidden", 403
 
-    # Incoming message
     elif request.method == "POST":
         data = request.get_json(silent=True)
         print("POST DATA:", data)
@@ -46,11 +33,71 @@ def webhook():
         try:
             message = data["entry"][0]["changes"][0]["value"]["messages"][0]
             sender = message["from"]
+            user_text = message["text"]["body"].lower().strip()
 
-            send_whatsapp_message(
-                sender,
-                "Hello from SmartVersa Bot 🚀"
-            )
+            if user_text in ["hi", "hello", "hey"]:
+                reply = """Hi 👋 Welcome to SmartVersa!
+
+We help students become industry-ready 🚀
+
+Choose an option:
+1️⃣ AI & Data Science Internship
+2️⃣ Digital Marketing Internship
+3️⃣ Fees / Pricing
+4️⃣ Talk to Human Support"""
+
+            elif user_text == "1":
+                reply = """📊 AI & Data Science Internship
+
+✔ Real Projects
+✔ Resume Building
+✔ Certificate
+✔ Career Guidance
+
+Reply:
+ENROLL / BACK"""
+
+            elif user_text == "2":
+                reply = """📈 Digital Marketing Internship
+
+Learn:
+• SEO
+• Meta Ads
+• Lead Generation
+• Social Media Marketing
+
+Reply:
+ENROLL / BACK"""
+
+            elif user_text in ["3", "fees", "price", "pricing"]:
+                reply = """💰 SmartVersa Pricing
+
+AI & Data Science Internship: ₹899
+Digital Marketing Internship: ₹4999
+
+Reply ENROLL to join."""
+
+            elif user_text in ["4", "human", "support"]:
+                reply = "Our support team will contact you shortly 😊"
+
+            elif user_text == "enroll":
+                reply = "Please complete registration here: https://pay.smartversa.in"
+
+            elif user_text == "back":
+                reply = """Main Menu:
+
+1️⃣ AI Internship
+2️⃣ Digital Marketing
+3️⃣ Fees
+4️⃣ Human Support"""
+
+            else:
+                reply = """I didn't understand that 🤔
+
+Please choose:
+1 / 2 / 3 / 4"""
+
+            send_whatsapp_message(sender, reply)
 
         except Exception as e:
             print("ERROR:", str(e))
@@ -76,12 +123,9 @@ def send_whatsapp_message(to, text):
     }
 
     response = requests.post(url, headers=headers, json=payload)
-
-    print("SEND STATUS:", response.status_code)
-    print("SEND RESPONSE:", response.text)
+    print(response.status_code, response.text)
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    print("🚀 RUNNING THIS APP.PY")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port)
