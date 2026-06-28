@@ -72,7 +72,7 @@ ENROLL / BACK"""
             elif user_text in ["3", "fees", "price", "pricing"]:
                 reply = """💰 SmartVersa Pricing
 
-AI & Data Science Internship: ₹899
+AI & Data Science Internship: ₹1299
 Digital Marketing Internship: ₹4999
 
 Reply ENROLL to join."""
