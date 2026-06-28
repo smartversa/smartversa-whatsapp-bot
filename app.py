@@ -81,7 +81,7 @@ Reply ENROLL to join."""
                 reply = "Our support team will contact you shortly 😊"
 
             elif user_text == "enroll":
-                reply = "Please complete registration here: https://pay.smartversa.in"
+                reply = "Please complete registration here: https://pay.smartversa.in/orderform"
 
             elif user_text == "back":
                 reply = """Main Menu:
