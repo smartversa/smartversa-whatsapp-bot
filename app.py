@@ -79,9 +79,78 @@ def webhook():
                     return "OK", 200
 
                 text = msg["text"]["body"].strip()
+                lower_text = text.lower()
 
-                # New user
+                # ---------- Ice Breakers for New Users ----------
                 if phone not in user_sessions:
+
+                    if "ai" in lower_text:
+                        send_whatsapp_message(
+                            phone,
+                            """🤖 AI & Data Science Program
+
+✔ Python
+✔ Data Analysis
+✔ Machine Learning
+✔ AI Tools
+✔ Real-world Projects
+✔ Internship Certificate
+✔ Resume Building
+✔ Portfolio Building
+
+Fee: ₹1299
+
+Enroll now:
+https://pay.smartversa.in/orderform"""
+                        )
+                        return "OK", 200
+
+                    elif "digital" in lower_text:
+                        send_whatsapp_message(
+                            phone,
+                            """📈 Digital Marketing Program
+
+✔ Social Media Marketing
+✔ Meta Ads
+✔ SEO
+✔ Content Creation
+✔ Lead Generation
+✔ Real Client Projects
+✔ Internship Certificate
+
+Fee: ₹4999
+
+Enroll now:
+https://pay.smartversa.in/orderform"""
+                        )
+                        return "OK", 200
+
+                    elif "fees" in lower_text:
+                        send_whatsapp_message(
+                            phone,
+                            """💰 Course Fees
+
+🤖 AI & Data Science — ₹1299
+📈 Digital Marketing — ₹4999
+
+Reply with course name to know more."""
+                        )
+                        return "OK", 200
+
+                    elif "counsellor" in lower_text:
+                        send_whatsapp_message(
+                            phone,
+                            "👩‍💼 Our counsellor will contact you shortly.\n\nPlease enter your full name:"
+                        )
+                        user_sessions[phone] = {
+                            "step": 1,
+                            "name": "",
+                            "language": "",
+                            "email": "",
+                            "interest": ""
+                        }
+                        return "OK", 200
+
                     user_sessions[phone] = {
                         "step": 1,
                         "name": "",
@@ -125,7 +194,7 @@ def webhook():
                         "Which program interests you?\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
                     )
 
-                # Step 4 -> Interest + Save + Course Details
+                # Step 4 -> Interest + Save
                 elif session["step"] == 4:
 
                     if text == "1":
@@ -163,24 +232,7 @@ def webhook():
                             phone,
                             """🤖 AI & Data Science Program
 
-Learn industry-ready skills from scratch.
-
-✔ Python
-✔ Data Analysis
-✔ Machine Learning
-✔ AI Tools
-✔ Real-world Projects
-✔ Internship Certificate
-✔ Resume Building
-✔ Portfolio Building
-
-Perfect for:
-• College Students
-• Freshers
-• Career Switchers
-
 Fee: ₹1299
-
 Enroll now:
 https://pay.smartversa.in/orderform"""
                         )
@@ -190,24 +242,7 @@ https://pay.smartversa.in/orderform"""
                             phone,
                             """📈 Digital Marketing Program
 
-Become job/freelance ready with practical skills.
-
-✔ Social Media Marketing
-✔ Meta Ads
-✔ SEO
-✔ Content Creation
-✔ Lead Generation
-✔ Real Client Projects
-✔ Internship Certificate
-✔ Freelancing Guidance
-
-Perfect for:
-• Students
-• Business Owners
-• Freelancers
-
 Fee: ₹4999
-
 Enroll now:
 https://pay.smartversa.in/orderform"""
                         )
@@ -215,12 +250,10 @@ https://pay.smartversa.in/orderform"""
                     else:
                         send_whatsapp_message(
                             phone,
-                            """🤖 AI & Data Science + 📈 Digital Marketing
+                            """🤖 AI + 📈 Digital Marketing
 
-You selected BOTH programs.
-
-AI Course Fee: ₹1299
-Digital Marketing Fee: ₹4999
+AI Course: ₹1299
+Digital Marketing: ₹4999
 
 Enroll now:
 https://pay.smartversa.in/orderform"""
