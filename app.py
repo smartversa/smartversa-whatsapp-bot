@@ -4,7 +4,7 @@ import json
 import gspread
 import requests
 from google.oauth2.service_account import Credentials
-from datetime import datetime
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 
@@ -50,22 +50,24 @@ def send_whatsapp_message(to, text):
 def save_lead(phone, session):
     now = datetime.now()
 
-    row = [
-        session["name"],
-        phone,
-        session.get("whatsapp_name", ""),
-        session["email"],
-        session["language"],
-        session["interest"],
-        "WhatsApp Bot",
-        session["inquiry_message"],
-        session["stage"],
-        now.strftime("%d-%m-%Y"),
-        now.strftime("%H:%M"),
-        "",
-        "Pending",
-        ""
-    ]
+row = [
+    session["name"],                    # A Name
+    phone,                              # B Phone
+    session.get("whatsapp_name", ""),   # C WhatsApp Name
+    session["email"],                   # D Email
+    session["language"],                # E Preferred Language
+    session["interest"],                # F Course Interest
+    "WhatsApp Bot",                     # G Lead Source
+    session["inquiry_message"],         # H Inquiry Message
+    session["stage"],                   # I Stage
+    now.strftime("%d-%m-%Y"),           # J Date
+    now.strftime("%H:%M"),              # K Time
+    "",                                 # L Follow-up Date
+    "Pending",                          # M Payment Status
+    "",                                 # N Notes
+    "No",                               # O Followup1 Sent
+    "No"                                # P Followup2 Sent
+]
 
     sheet.append_row(row)
 
@@ -261,6 +263,76 @@ def webhook():
 
                     save_lead(phone, session)
 
+                    #follow up
+                    def check_pending_leads():
+    records = sheet.get_all_records()
+
+    for idx, row in enumerate(records, start=2):  # row 2 because row 1 is header
+        try:
+            stage = row["Stage"]
+            payment = row["Payment Status"]
+            followup1 = row["Followup1 Sent"]
+            followup2 = row["Followup2 Sent"]
+
+            if stage != "Hot Lead":
+                continue
+
+            if payment == "Paid":
+                continue
+
+            lead_date = row["Date"]
+            lead_time = row["Time"]
+
+            if not lead_date or not lead_time:
+                continue
+
+            lead_datetime = datetime.strptime(
+                f"{lead_date} {lead_time}",
+                "%d-%m-%Y %H:%M"
+            )
+
+            hours_passed = (datetime.now() - lead_datetime).total_seconds() / 3600
+
+            phone = row["Phone"]
+            name = row["Name"]
+
+            # Follow-up 1 after 24 hrs
+            if hours_passed >= 24 and followup1 != "Yes":
+                msg = f"""Hi {name} 👋
+
+You showed interest in SmartVersa recently.
+
+Need help with enrollment or course selection?
+
+Reply anytime 😊"""
+
+                send_whatsapp_message(phone, msg)
+
+                sheet.update_cell(idx, 15, "Yes")   # O column
+                sheet.update_cell(
+                    idx,
+                    12,
+                    datetime.now().strftime("%d-%m-%Y")
+                )
+
+            # Follow-up 2 after 72 hrs
+            elif hours_passed >= 72 and followup2 != "Yes":
+                msg = """Hi 😊
+
+Just a reminder about your SmartVersa enrollment.
+
+Seats are limited.
+
+Enroll now:
+https://pay.smartversa.in/orderform"""
+
+                send_whatsapp_message(phone, msg)
+
+                sheet.update_cell(idx, 16, "Yes")   # P column
+
+        except Exception as e:
+            print("FOLLOWUP ERROR:", e)
+
                     if session["stage"] == "Hot Lead":
                         send_whatsapp_message(
                             phone,
@@ -278,7 +350,12 @@ def webhook():
             print("ERROR:", e)
 
         return "OK", 200
-
+        
+@app.route("/followup")
+def run_followup():
+    check_pending_leads()
+    return "Follow-up completed"
+    
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
