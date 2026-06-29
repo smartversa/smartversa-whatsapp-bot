@@ -47,6 +47,88 @@ def send_whatsapp_message(to, text):
     print(response.text)
 
 
+def save_lead(phone, session):
+    now = datetime.now()
+
+    row = [
+        session["name"],
+        phone,
+        session.get("whatsapp_name", ""),
+        session["email"],
+        session["language"],
+        session["interest"],
+        "WhatsApp Bot",
+        session["inquiry_message"],
+        session["stage"],
+        now.strftime("%d-%m-%Y"),
+        now.strftime("%H:%M"),
+        "",
+        "Pending",
+        ""
+    ]
+
+    sheet.append_row(row)
+
+
+def get_course_details(choice):
+    if choice == "1":
+        return (
+            "AI & Data Science",
+            """🤖 AI & Data Science Course
+
+✔ Python from scratch
+✔ Data Analysis
+✔ Machine Learning basics
+✔ AI Tools
+✔ Real-world Projects
+✔ Internship Certificate
+✔ Resume Building
+✔ Portfolio Building
+
+Price: ₹1299"""
+        )
+
+    elif choice == "2":
+        return (
+            "Digital Marketing",
+            """📈 Digital Marketing Course
+
+✔ Social Media Marketing
+✔ Meta Ads
+✔ SEO
+✔ Content Creation
+✔ Lead Generation
+✔ Real Client Projects
+✔ Internship Certificate
+✔ Freelancing Guidance
+
+Price: ₹4999"""
+        )
+
+    else:
+        return (
+            "Both",
+            """🎯 SmartVersa Course Bundle
+
+🤖 AI & Data Science — ₹1299
+📈 Digital Marketing — ₹4999
+
+AI Course Includes:
+✔ Python
+✔ Data Analysis
+✔ ML Basics
+✔ AI Tools
+✔ Projects
+
+Digital Marketing Includes:
+✔ Meta Ads
+✔ SEO
+✔ Content Creation
+✔ Lead Generation
+✔ Client Projects"""
+        )
+
+
 @app.route("/")
 def home():
     return "SmartVersa Bot Running"
@@ -75,88 +157,26 @@ def webhook():
                 msg = value["messages"][0]
                 phone = msg["from"]
 
+                wa_name = ""
+                if "contacts" in value:
+                    wa_name = value["contacts"][0]["profile"]["name"]
+
                 if "text" not in msg:
                     return "OK", 200
 
                 text = msg["text"]["body"].strip()
-                lower_text = text.lower()
 
-                # ---------- Ice Breakers for New Users ----------
+                # New user
                 if phone not in user_sessions:
-
-                    if "ai" in lower_text:
-                        send_whatsapp_message(
-                            phone,
-                            """🤖 AI & Data Science Program
-
-✔ Python
-✔ Data Analysis
-✔ Machine Learning
-✔ AI Tools
-✔ Real-world Projects
-✔ Internship Certificate
-✔ Resume Building
-✔ Portfolio Building
-
-Fee: ₹1299
-
-Enroll now:
-https://pay.smartversa.in/orderform"""
-                        )
-                        return "OK", 200
-
-                    elif "digital" in lower_text:
-                        send_whatsapp_message(
-                            phone,
-                            """📈 Digital Marketing Program
-
-✔ Social Media Marketing
-✔ Meta Ads
-✔ SEO
-✔ Content Creation
-✔ Lead Generation
-✔ Real Client Projects
-✔ Internship Certificate
-
-Fee: ₹4999
-
-Enroll now:
-https://pay.smartversa.in/orderform"""
-                        )
-                        return "OK", 200
-
-                    elif "fees" in lower_text:
-                        send_whatsapp_message(
-                            phone,
-                            """💰 Course Fees
-
-🤖 AI & Data Science — ₹1299
-📈 Digital Marketing — ₹4999
-
-Reply with course name to know more."""
-                        )
-                        return "OK", 200
-
-                    elif "counsellor" in lower_text:
-                        send_whatsapp_message(
-                            phone,
-                            "👩‍💼 Our counsellor will contact you shortly.\n\nPlease enter your full name:"
-                        )
-                        user_sessions[phone] = {
-                            "step": 1,
-                            "name": "",
-                            "language": "",
-                            "email": "",
-                            "interest": ""
-                        }
-                        return "OK", 200
-
                     user_sessions[phone] = {
                         "step": 1,
                         "name": "",
+                        "whatsapp_name": wa_name,
                         "language": "",
                         "email": "",
-                        "interest": ""
+                        "interest": "",
+                        "stage": "",
+                        "inquiry_message": text
                     }
 
                     send_whatsapp_message(
@@ -167,96 +187,89 @@ Reply with course name to know more."""
 
                 session = user_sessions[phone]
 
-                # Step 1 -> Name
+                # STEP 1 -> NAME
                 if session["step"] == 1:
                     session["name"] = text
                     session["step"] = 2
+
                     send_whatsapp_message(
                         phone,
-                        "Preferred Language?\n1. Hindi\n2. English"
+                        "Preferred Language?\n\n1. Hindi\n2. English"
                     )
 
-                # Step 2 -> Language
+                # STEP 2 -> LANGUAGE
                 elif session["step"] == 2:
-                    session["language"] = "Hindi" if text == "1" else "English"
+                    if text == "1":
+                        session["language"] = "Hindi"
+                    elif text == "2":
+                        session["language"] = "English"
+                    else:
+                        send_whatsapp_message(phone, "Please reply with 1 or 2.")
+                        return "OK", 200
+
                     session["step"] = 3
+
                     send_whatsapp_message(
                         phone,
-                        "Please enter your email address (or type SKIP):"
+                        "Which course are you interested in?\n\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
                     )
 
-                # Step 3 -> Email
+                # STEP 3 -> COURSE
                 elif session["step"] == 3:
-                    session["email"] = text
+                    if text not in ["1", "2", "3"]:
+                        send_whatsapp_message(phone, "Please reply with 1, 2, or 3.")
+                        return "OK", 200
+
+                    course_name, details = get_course_details(text)
+                    session["interest"] = course_name
                     session["step"] = 4
+
                     send_whatsapp_message(
                         phone,
-                        "Which program interests you?\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
+                        details +
+                        "\n\nAre you interested?\n\n1. Yes\n2. No / Need Counsellor"
                     )
 
-                # Step 4 -> Interest + Save
+                # STEP 4 -> INTEREST DECISION
                 elif session["step"] == 4:
-
                     if text == "1":
-                        interest = "AI & Data Science"
-                    elif text == "2":
-                        interest = "Digital Marketing"
-                    else:
-                        interest = "Both"
+                        session["stage"] = "Hot Lead"
+                        session["step"] = 5
 
-                    session["interest"] = interest
-
-                    now = datetime.now()
-
-                    row = [
-                        session["name"],
-                        phone,
-                        "",
-                        session["email"],
-                        session["language"],
-                        session["interest"],
-                        "WhatsApp Bot",
-                        text,
-                        "Qualified Lead",
-                        now.strftime("%d-%m-%Y"),
-                        now.strftime("%H:%M"),
-                        "",
-                        "Pending",
-                        ""
-                    ]
-
-                    sheet.append_row(row)
-
-                    if text == "1":
                         send_whatsapp_message(
                             phone,
-                            """🤖 AI & Data Science Program
-
-Fee: ₹1299
-Enroll now:
-https://pay.smartversa.in/orderform"""
+                            "Great 😊\n\nPlease enter your email address (or type SKIP):"
                         )
 
                     elif text == "2":
+                        session["stage"] = "Need Counsellor"
+                        session["step"] = 5
+
                         send_whatsapp_message(
                             phone,
-                            """📈 Digital Marketing Program
-
-Fee: ₹4999
-Enroll now:
-https://pay.smartversa.in/orderform"""
+                            "No worries 😊 Our counsellor will contact you shortly.\n\nPlease enter your email address (or type SKIP):"
                         )
+                    else:
+                        send_whatsapp_message(phone, "Please reply with 1 or 2.")
 
+                # STEP 5 -> EMAIL + SAVE
+                elif session["step"] == 5:
+                    if text.upper() == "SKIP":
+                        session["email"] = ""
+                    else:
+                        session["email"] = text
+
+                    save_lead(phone, session)
+
+                    if session["stage"] == "Hot Lead":
+                        send_whatsapp_message(
+                            phone,
+                            "🎉 Enrollment Link:\nhttps://pay.smartversa.in/orderform"
+                        )
                     else:
                         send_whatsapp_message(
                             phone,
-                            """🤖 AI + 📈 Digital Marketing
-
-AI Course: ₹1299
-Digital Marketing: ₹4999
-
-Enroll now:
-https://pay.smartversa.in/orderform"""
+                            "✅ Your request has been sent to our counsellor."
                         )
 
                     del user_sessions[phone]
