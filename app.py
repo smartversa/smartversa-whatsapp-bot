@@ -38,13 +38,15 @@ def send_whatsapp_message(to, text):
 
     payload = {
         "messaging_product": "whatsapp",
-        "to": to,
+        "to": str(to).strip(),
         "type": "text",
         "text": {"body": text}
     }
 
     response = requests.post(url, headers=headers, json=payload)
-    print(response.text)
+
+    print("Status:", response.status_code)
+    print("Response:", response.text)
 
 
 def save_lead(phone, session):
