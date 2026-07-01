@@ -1,11 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, render_template_string, redirect
 import os
 import json
 import gspread
 import requests
 from google.oauth2.service_account import Credentials
 from datetime import datetime
-from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
@@ -13,9 +12,17 @@ VERIFY_TOKEN = "smartversa_bot_2026"
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = "1207113965816609"
 
+WEBSITE_URL = "https://smartversa.in"
+PAYMENT_URL = "https://pay.smartversa.in/orderform"
+
+AI_IMAGE_URL = "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
+DM_IMAGE_URL = "https://images.unsplash.com/photo-1552664730-d307ca884978"
+
+ADMIN_PASSWORD = "smartversa123"   # change later
+
 user_sessions = {}
 
-# ---------- Google Sheets Setup ----------
+# ---------------- Google Sheets ----------------
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
@@ -27,8 +34,23 @@ client = gspread.authorize(creds)
 
 sheet_name = os.getenv("GOOGLE_SHEET_NAME")
 sheet = client.open(sheet_name).sheet1
+messages_sheet = sheet.spreadsheet.worksheet("Messages")
 
 
+# ---------------- Message Logging ----------------
+def save_message(phone, sender, message):
+    now = datetime.now()
+    row = [
+        str(phone),
+        sender,
+        message,
+        now.strftime("%d-%m-%Y"),
+        now.strftime("%H:%M")
+    ]
+    messages_sheet.append_row(row)
+
+
+# ---------------- WhatsApp Text ----------------
 def send_whatsapp_message(to, text, sender="Bot"):
     url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
 
@@ -46,12 +68,38 @@ def send_whatsapp_message(to, text, sender="Bot"):
 
     response = requests.post(url, headers=headers, json=payload)
 
-    save_message(str(to), sender, text)
+    save_message(to, sender, text)
 
-    print("Status:", response.status_code)
-    print("Response:", response.text)
+    print("STATUS:", response.status_code)
+    print("RESPONSE:", response.text)
 
 
+# ---------------- WhatsApp Image ----------------
+def send_whatsapp_image(to, image_url, caption=""):
+    url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
+
+    headers = {
+        "Authorization": f"Bearer {WHATSAPP_TOKEN}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "messaging_product": "whatsapp",
+        "to": str(to),
+        "type": "image",
+        "image": {
+            "link": image_url,
+            "caption": caption
+        }
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+
+    save_message(to, "Bot", f"[IMAGE] {caption}")
+    print(response.text)
+
+
+# ---------------- Save Lead ----------------
 def save_lead(phone, session):
     now = datetime.now()
 
@@ -77,7 +125,61 @@ def save_lead(phone, session):
     sheet.append_row(row)
 
 
-def check_pending_leads():
+# ---------------- Course Details ----------------
+def get_course_details(choice):
+    if choice == "1":
+        return (
+            "AI & Data Science",
+            AI_IMAGE_URL,
+            """🤖 AI & Data Science Course
+
+✔ Python from scratch
+✔ Data Analysis
+✔ Machine Learning Basics
+✔ AI Tools
+✔ Real-world Projects
+✔ Internship Certificate
+✔ Resume Building
+✔ Portfolio Building
+
+Price: ₹1299"""
+        )
+
+    elif choice == "2":
+        return (
+            "Digital Marketing",
+            DM_IMAGE_URL,
+            """📈 Digital Marketing Course
+
+✔ Social Media Marketing
+✔ Meta Ads
+✔ SEO
+✔ Content Creation
+✔ Lead Generation
+✔ Real Client Projects
+✔ Internship Certificate
+✔ Freelancing Guidance
+
+Price: ₹4999"""
+        )
+
+    else:
+        return (
+            "Both",
+            AI_IMAGE_URL,
+            """🎯 SmartVersa Bundle
+
+🤖 AI & Data Science — ₹1299
+📈 Digital Marketing — ₹4999"""
+        )
+
+@app.route("/")
+def home():
+    return "SmartVersa Bot Running"
+
+
+@app.route("/followup")
+def run_followup():
     records = sheet.get_all_records()
 
     for idx, row in enumerate(records, start=2):
@@ -104,9 +206,7 @@ def check_pending_leads():
                 "%d-%m-%Y %H:%M"
             )
 
-            hours_passed = (
-                datetime.now() - lead_datetime
-            ).total_seconds() / 3600
+            hours_passed = (datetime.now() - lead_datetime).total_seconds() / 3600
 
             phone = row["Phone"]
             name = row["Name"]
@@ -114,9 +214,7 @@ def check_pending_leads():
             if hours_passed >= 24 and followup1 != "Yes":
                 msg = f"""Hi {name} 👋
 
-You showed interest in SmartVersa recently.
-
-Need help with enrollment or course selection?
+Need help with enrollment?
 
 Reply anytime 😊"""
 
@@ -124,14 +222,10 @@ Reply anytime 😊"""
                 sheet.update_cell(idx, 15, "Yes")
 
             elif hours_passed >= 72 and followup2 != "Yes":
-                msg = """Hi 😊
-
-Just a reminder about your SmartVersa enrollment.
-
-Seats are limited.
+                msg = f"""Final reminder 😊
 
 Enroll now:
-https://pay.smartversa.in/orderform"""
+{PAYMENT_URL}"""
 
                 send_whatsapp_message(phone, msg)
                 sheet.update_cell(idx, 16, "Yes")
@@ -139,60 +233,6 @@ https://pay.smartversa.in/orderform"""
         except Exception as e:
             print("FOLLOWUP ERROR:", e)
 
-
-def get_course_details(choice):
-    if choice == "1":
-        return (
-            "AI & Data Science",
-            """🤖 AI & Data Science Course
-
-✔ Python from scratch
-✔ Data Analysis
-✔ Machine Learning basics
-✔ AI Tools
-✔ Real-world Projects
-✔ Internship Certificate
-✔ Resume Building
-✔ Portfolio Building
-
-Price: ₹1299"""
-        )
-
-    elif choice == "2":
-        return (
-            "Digital Marketing",
-            """📈 Digital Marketing Course
-
-✔ Social Media Marketing
-✔ Meta Ads
-✔ SEO
-✔ Content Creation
-✔ Lead Generation
-✔ Real Client Projects
-✔ Internship Certificate
-✔ Freelancing Guidance
-
-Price: ₹4999"""
-        )
-
-    else:
-        return (
-            "Both",
-            """🎯 SmartVersa Course Bundle
-
-🤖 AI & Data Science — ₹1299
-📈 Digital Marketing — ₹4999"""
-        )
-
-
-@app.route("/")
-def home():
-    return "SmartVersa Bot Running"
-
-
-@app.route("/followup")
-def run_followup():
-    check_pending_leads()
     return "Follow-up completed"
 
 
@@ -227,9 +267,8 @@ def webhook():
                     return "OK", 200
 
                 text = msg["text"]["body"].strip()
-
                 save_message(phone, "User", text)
-                
+
                 if phone not in user_sessions:
                     user_sessions[phone] = {
                         "step": 1,
@@ -250,11 +289,16 @@ def webhook():
 
                 session = user_sessions[phone]
 
+                # Step 1 Name
                 if session["step"] == 1:
                     session["name"] = text
                     session["step"] = 2
-                    send_whatsapp_message(phone, "Preferred Language?\n\n1. Hindi\n2. English")
+                    send_whatsapp_message(
+                        phone,
+                        "Preferred Language?\n\n1. Hindi\n2. English"
+                    )
 
+                # Step 2 Language
                 elif session["step"] == 2:
                     if text == "1":
                         session["language"] = "Hindi"
@@ -270,27 +314,31 @@ def webhook():
                         "Which course are you interested in?\n\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
                     )
 
+                # Step 3 Course
                 elif session["step"] == 3:
                     if text not in ["1", "2", "3"]:
                         send_whatsapp_message(phone, "Please reply with 1, 2, or 3.")
                         return "OK", 200
 
-                    course_name, details = get_course_details(text)
+                    course_name, image_url, details = get_course_details(text)
                     session["interest"] = course_name
                     session["step"] = 4
 
+                    send_whatsapp_image(phone, image_url, "SmartVersa Course")
+                    send_whatsapp_message(phone, details)
                     send_whatsapp_message(
                         phone,
-                        details + "\n\nAre you interested?\n\n1. Yes\n2. No / Need Counsellor"
+                        f"🌐 Website: {WEBSITE_URL}\n\nAre you interested?\n\n1. Yes\n2. No / Need Counsellor"
                     )
 
+                # Step 4 Interest
                 elif session["step"] == 4:
                     if text == "1":
                         session["stage"] = "Hot Lead"
                         session["step"] = 5
                         send_whatsapp_message(
                             phone,
-                            "Great 😊\n\nPlease enter your email address (or type SKIP):"
+                            "Great 😊\n\nPlease enter your email (or type SKIP):"
                         )
 
                     elif text == "2":
@@ -298,11 +346,12 @@ def webhook():
                         session["step"] = 5
                         send_whatsapp_message(
                             phone,
-                            "No worries 😊 Our counsellor will contact you shortly.\n\nPlease enter your email address (or type SKIP):"
+                            "No worries 😊 Counsellor will contact you.\n\nPlease enter your email (or type SKIP):"
                         )
                     else:
                         send_whatsapp_message(phone, "Please reply with 1 or 2.")
 
+                # Step 5 Email
                 elif session["step"] == 5:
                     if text.upper() == "SKIP":
                         session["email"] = ""
@@ -314,12 +363,12 @@ def webhook():
                     if session["stage"] == "Hot Lead":
                         send_whatsapp_message(
                             phone,
-                            "🎉 Enrollment Link:\nhttps://pay.smartversa.in/orderform"
+                            f"🎉 Enrollment Link:\n{PAYMENT_URL}"
                         )
                     else:
                         send_whatsapp_message(
                             phone,
-                            "✅ Your request has been sent to our counsellor."
+                            "✅ Your request has been sent to counsellor."
                         )
 
                     del user_sessions[phone]
@@ -329,74 +378,119 @@ def webhook():
 
         return "OK", 200
 
-
-def save_message(phone, sender, message):
-    messages_sheet = sheet.spreadsheet.worksheet("Messages")
-    now = datetime.now()
-
-    row = [
-        phone,
-        sender,
-        message,
-        now.strftime("%d-%m-%Y"),
-        now.strftime("%H:%M")
-    ]
-
-    messages_sheet.append_row(row)
-
-@app.route("/send_manual")
+@app.route("/send_manual", methods=["POST"])
 def send_manual():
-    phone = request.args.get("phone")
-    msg = request.args.get("msg")
+    password = request.form.get("password")
+    if password != ADMIN_PASSWORD:
+        return "Unauthorized"
+
+    phone = request.form.get("phone")
+    msg = request.form.get("msg")
 
     if not phone or not msg:
-        return "phone and msg required"
+        return "Missing fields"
 
     send_whatsapp_message(phone, msg, sender="Admin")
-    return "Message sent"
+    return redirect(f"/dashboard?phone={phone}&password={password}")
 
 
 @app.route("/dashboard")
 def dashboard():
-    messages_sheet = sheet.spreadsheet.worksheet("Messages")
+    password = request.args.get("password")
+
+    if password != ADMIN_PASSWORD:
+        return """
+        <html>
+        <body style='font-family:Arial;padding:50px'>
+            <h2>SmartVersa Admin Login</h2>
+            <form>
+                <input type='password' name='password' placeholder='Password'/>
+                <button type='submit'>Login</button>
+            </form>
+        </body>
+        </html>
+        """
+
     records = messages_sheet.get_all_records()
 
     leads = {}
     for row in records:
-        phone = row["Phone"]
+        phone = str(row["Phone"])
         if phone not in leads:
             leads[phone] = []
         leads[phone].append(row)
 
-    html = """
+    selected_phone = request.args.get("phone")
+    chat_html = ""
+
+    if selected_phone and selected_phone in leads:
+        for msg in leads[selected_phone]:
+            sender = msg["Sender"]
+            message = msg["Message"]
+
+            if sender == "User":
+                bg = "#DCF8C6"
+                align = "left"
+            elif sender == "Admin":
+                bg = "#D9EFFF"
+                align = "right"
+            else:
+                bg = "#F0F0F0"
+                align = "left"
+
+            chat_html += f"""
+            <div style='text-align:{align};margin:8px'>
+                <span style='background:{bg};padding:10px;border-radius:10px;display:inline-block;max-width:70%'>
+                    <b>{sender}:</b><br>{message}
+                </span>
+            </div>
+            """
+
+    html = f"""
     <html>
     <head>
     <title>SmartVersa Dashboard</title>
     <style>
-        body { font-family: Arial; display:flex; margin:0; }
-        .left {
-            width:30%;
+        body {{
+            margin:0;
+            font-family:Arial;
+            display:flex;
             height:100vh;
+        }}
+        .left {{
+            width:30%;
+            border-right:1px solid #ddd;
             overflow:auto;
-            border-right:1px solid #ccc;
             padding:20px;
-        }
-        .right {
+        }}
+        .right {{
             width:70%;
+            display:flex;
+            flex-direction:column;
+        }}
+        .chat {{
+            flex:1;
+            overflow:auto;
             padding:20px;
-        }
-        .lead {
-            padding:10px;
+            background:#fafafa;
+        }}
+        .lead {{
+            padding:12px;
+            margin-bottom:8px;
             border:1px solid #ddd;
-            margin-bottom:10px;
-            cursor:pointer;
-        }
-        textarea{
+            border-radius:8px;
+        }}
+        .sendbox {{
+            padding:20px;
+            border-top:1px solid #ddd;
+        }}
+        textarea {{
             width:100%;
             height:80px;
-        }
+        }}
     </style>
     </head>
+
     <body>
         <div class="left">
             <h2>Leads</h2>
@@ -405,23 +499,33 @@ def dashboard():
     for phone in leads:
         html += f"""
         <div class='lead'>
-            {phone}
+            <a href='/dashboard?password={password}&phone={phone}'>{phone}</a>
         </div>
         """
 
-    html += """
+    html += f"""
         </div>
+
         <div class="right">
-            <h2>SmartVersa Manual Chat</h2>
-            <p>Phase 1 Dashboard Ready ✅</p>
-            <p>Next: interactive chat UI</p>
+            <div class="chat">
+                <h3>Chat: {selected_phone if selected_phone else "Select Lead"}</h3>
+                {chat_html}
+            </div>
+
+            <div class="sendbox">
+                <form method="POST" action="/send_manual">
+                    <input type="hidden" name="password" value="{password}">
+                    <input type="hidden" name="phone" value="{selected_phone if selected_phone else ''}">
+                    <textarea name="msg" placeholder="Type message..."></textarea><br><br>
+                    <button type="submit">Send</button>
+                </form>
+            </div>
         </div>
     </body>
     </html>
     """
 
-    return render_template_string(html)
-
+    return html
 
 
 if __name__ == "__main__":
