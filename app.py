@@ -28,7 +28,7 @@ sheet_name = os.getenv("GOOGLE_SHEET_NAME")
 sheet = client.open(sheet_name).sheet1
 
 
-def send_whatsapp_message(to, text):
+def send_whatsapp_message(to, text, sender="Bot"):
     url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
 
     headers = {
@@ -44,6 +44,8 @@ def send_whatsapp_message(to, text):
     }
 
     response = requests.post(url, headers=headers, json=payload)
+
+    save_message(str(to), sender, text)
 
     print("Status:", response.status_code)
     print("Response:", response.text)
@@ -225,6 +227,8 @@ def webhook():
 
                 text = msg["text"]["body"].strip()
 
+                save_message(phone, "User", text)
+                
                 if phone not in user_sessions:
                     user_sessions[phone] = {
                         "step": 1,
@@ -324,6 +328,32 @@ def webhook():
 
         return "OK", 200
 
+
+def save_message(phone, sender, message):
+    messages_sheet = client.open(sheet_name).worksheet("Messages")
+    now = datetime.now()
+
+    row = [
+        phone,
+        sender,
+        message,
+        now.strftime("%d-%m-%Y"),
+        now.strftime("%H:%M")
+    ]
+
+    messages_sheet.append_row(row)
+
+@app.route("/send_manual")
+def send_manual():
+    phone = request.args.get("phone")
+    msg = request.args.get("msg")
+
+    if not phone or not msg:
+        return "phone and msg required"
+
+    send_whatsapp_message(phone, msg, sender="Admin")
+    return "Message sent"
+    
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
