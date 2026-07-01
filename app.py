@@ -330,7 +330,7 @@ def webhook():
 
 
 def save_message(phone, sender, message):
-    messages_sheet = client.open(sheet_name).worksheet("Messages")
+    messages_sheet = sheet.spreadsheet.worksheet("Messages")
     now = datetime.now()
 
     row = [
