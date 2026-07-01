@@ -5,6 +5,7 @@ import gspread
 import requests
 from google.oauth2.service_account import Credentials
 from datetime import datetime
+from flask import Flask, request, render_template_string
 
 app = Flask(__name__)
 
@@ -353,7 +354,75 @@ def send_manual():
 
     send_whatsapp_message(phone, msg, sender="Admin")
     return "Message sent"
-    
+
+
+@app.route("/dashboard")
+def dashboard():
+    messages_sheet = sheet.spreadsheet.worksheet("Messages")
+    records = messages_sheet.get_all_records()
+
+    leads = {}
+    for row in records:
+        phone = row["Phone"]
+        if phone not in leads:
+            leads[phone] = []
+        leads[phone].append(row)
+
+    html = """
+    <html>
+    <head>
+    <title>SmartVersa Dashboard</title>
+    <style>
+        body { font-family: Arial; display:flex; margin:0; }
+        .left {
+            width:30%;
+            height:100vh;
+            overflow:auto;
+            border-right:1px solid #ccc;
+            padding:20px;
+        }
+        .right {
+            width:70%;
+            padding:20px;
+        }
+        .lead {
+            padding:10px;
+            border:1px solid #ddd;
+            margin-bottom:10px;
+            cursor:pointer;
+        }
+        textarea{
+            width:100%;
+            height:80px;
+        }
+    </style>
+    </head>
+    <body>
+        <div class="left">
+            <h2>Leads</h2>
+    """
+
+    for phone in leads:
+        html += f"""
+        <div class='lead'>
+            {phone}
+        </div>
+        """
+
+    html += """
+        </div>
+        <div class="right">
+            <h2>SmartVersa Manual Chat</h2>
+            <p>Phase 1 Dashboard Ready ✅</p>
+            <p>Next: interactive chat UI</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    return render_template_string(html)
+
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
