@@ -1,14 +1,13 @@
 from flask import Flask, request, redirect
 import os
 import json
+import html
 import gspread
 import requests
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 app = Flask(__name__)
-
-print("NEW APP VERSION LOADED 999")
 
 # ================= CONFIG =================
 VERIFY_TOKEN = "smartversa_bot_2026"
@@ -22,20 +21,29 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "smartversa123")
 AI_IMAGE_URL = "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
 DM_IMAGE_URL = "https://images.unsplash.com/photo-1552664730-d307ca884978"
 
+WHATSAPP_API_VERSION = "v23.0"
+
 user_sessions = {}
 
 # ================= GOOGLE SHEETS =================
-scope = [
+SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds_json = json.loads(os.getenv("GOOGLE_CREDENTIALS_JSON"))
-creds = Credentials.from_service_account_info(creds_json, scopes=scope)
+_creds_raw = os.getenv("GOOGLE_CREDENTIALS_JSON")
+if not _creds_raw:
+    raise RuntimeError("Missing GOOGLE_CREDENTIALS_JSON environment variable")
+
+creds_json = json.loads(_creds_raw)
+creds = Credentials.from_service_account_info(creds_json, scopes=SCOPE)
 client = gspread.authorize(creds)
 
-sheet_name = os.getenv("GOOGLE_SHEET_NAME")
-sheet = client.open(sheet_name).sheet1
+SHEET_NAME = os.getenv("GOOGLE_SHEET_NAME")
+if not SHEET_NAME:
+    raise RuntimeError("Missing GOOGLE_SHEET_NAME environment variable")
+
+sheet = client.open(SHEET_NAME).sheet1
 messages_sheet = sheet.spreadsheet.worksheet("Messages")
 
 
@@ -53,7 +61,7 @@ def save_message(phone, sender, message):
 
 
 def send_whatsapp_message(to, text, sender="Bot"):
-    url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
+    url = f"https://graph.facebook.com/{WHATSAPP_API_VERSION}/{PHONE_NUMBER_ID}/messages"
 
     headers = {
         "Authorization": f"Bearer {WHATSAPP_TOKEN}",
@@ -67,15 +75,18 @@ def send_whatsapp_message(to, text, sender="Bot"):
         "text": {"body": text}
     }
 
-    response = requests.post(url, headers=headers, json=payload)
-    save_message(to, sender, text)
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=15)
+        print("STATUS:", response.status_code)
+        print("RESPONSE:", response.text)
+    except Exception as e:
+        print("SEND MESSAGE ERROR:", e)
 
-    print("STATUS:", response.status_code)
-    print("RESPONSE:", response.text)
+    save_message(to, sender, text)
 
 
 def send_whatsapp_image(to, image_url, caption=""):
-    url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
+    url = f"https://graph.facebook.com/{WHATSAPP_API_VERSION}/{PHONE_NUMBER_ID}/messages"
 
     headers = {
         "Authorization": f"Bearer {WHATSAPP_TOKEN}",
@@ -84,7 +95,7 @@ def send_whatsapp_image(to, image_url, caption=""):
 
     payload = {
         "messaging_product": "whatsapp",
-        "to": str(to),
+        "to": str(to).strip(),
         "type": "image",
         "image": {
             "link": image_url,
@@ -92,9 +103,14 @@ def send_whatsapp_image(to, image_url, caption=""):
         }
     }
 
-    response = requests.post(url, headers=headers, json=payload)
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=15)
+        print("STATUS:", response.status_code)
+        print("RESPONSE:", response.text)
+    except Exception as e:
+        print("SEND IMAGE ERROR:", e)
+
     save_message(to, "Bot", f"[IMAGE] {caption}")
-    print(response.text)
 
 
 def save_lead(phone, session):
@@ -121,7 +137,8 @@ def save_lead(phone, session):
 
     sheet.append_row(row)
 
-    def get_course_details(choice):
+
+def get_course_details(choice):
     if choice == "1":
         return (
             "AI & Data Science",
@@ -169,6 +186,11 @@ Price: ₹4999"""
         )
 
 
+def escape_html(text):
+    return html.escape(str(text)).replace("\n", "<br>")
+
+
+# ================= ROUTES =================
 @app.route("/")
 def home():
     return "SmartVersa Bot Running"
@@ -178,7 +200,8 @@ def home():
 def run_followup():
     try:
         records = sheet.get_all_records()
-    except:
+    except Exception as e:
+        print("SHEET ERROR:", e)
         return "Sheet error"
 
     for idx, row in enumerate(records, start=2):
@@ -224,6 +247,7 @@ def run_followup():
 
     return "Follow-up completed"
 
+
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
     if request.method == "GET":
@@ -235,132 +259,134 @@ def webhook():
             return challenge, 200
         return "Forbidden", 403
 
-    if request.method == "POST":
-        data = request.get_json()
+    data = request.get_json(silent=True) or {}
 
-        try:
-            entry = data["entry"][0]
-            changes = entry["changes"][0]
-            value = changes["value"]
+    try:
+        entry = data["entry"][0]
+        changes = entry["changes"][0]
+        value = changes["value"]
 
-            if "messages" in value:
-                msg = value["messages"][0]
-                phone = msg["from"]
+        if "messages" not in value:
+            return "OK", 200
 
-                wa_name = ""
-                if "contacts" in value:
-                    wa_name = value["contacts"][0]["profile"]["name"]
+        msg = value["messages"][0]
+        phone = msg["from"]
 
-                if "text" not in msg:
-                    return "OK", 200
+        wa_name = ""
+        if "contacts" in value:
+            wa_name = value["contacts"][0]["profile"]["name"]
 
-                text = msg["text"]["body"].strip()
-                save_message(phone, "User", text)
+        if "text" not in msg:
+            return "OK", 200
 
-                if phone not in user_sessions:
-                    user_sessions[phone] = {
-                        "step": 1,
-                        "name": "",
-                        "whatsapp_name": wa_name,
-                        "language": "",
-                        "email": "",
-                        "interest": "",
-                        "stage": "",
-                        "inquiry_message": text
-                    }
+        text = msg["text"]["body"].strip()
+        save_message(phone, "User", text)
 
-                    send_whatsapp_message(
-                        phone,
-                        "Hi 👋 Welcome to SmartVersa!\n\nPlease enter your full name:"
-                    )
-                    return "OK", 200
+        if phone not in user_sessions:
+            user_sessions[phone] = {
+                "step": 1,
+                "name": "",
+                "whatsapp_name": wa_name,
+                "language": "",
+                "email": "",
+                "interest": "",
+                "stage": "",
+                "inquiry_message": text
+            }
 
-                session = user_sessions[phone]
+            send_whatsapp_message(
+                phone,
+                "Hi 👋 Welcome to SmartVersa!\n\nPlease enter your full name:"
+            )
+            return "OK", 200
 
-                if session["step"] == 1:
-                    session["name"] = text
-                    session["step"] = 2
-                    send_whatsapp_message(
-                        phone,
-                        "Preferred Language?\n\n1. Hindi\n2. English"
-                    )
+        session = user_sessions[phone]
 
-                elif session["step"] == 2:
-                    if text == "1":
-                        session["language"] = "Hindi"
-                    elif text == "2":
-                        session["language"] = "English"
-                    else:
-                        send_whatsapp_message(phone, "Please reply with 1 or 2.")
-                        return "OK", 200
+        if session["step"] == 1:
+            session["name"] = text
+            session["step"] = 2
+            send_whatsapp_message(
+                phone,
+                "Preferred Language?\n\n1. Hindi\n2. English"
+            )
 
-                    session["step"] = 3
-                    send_whatsapp_message(
-                        phone,
-                        "Which course are you interested in?\n\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
-                    )
+        elif session["step"] == 2:
+            if text == "1":
+                session["language"] = "Hindi"
+            elif text == "2":
+                session["language"] = "English"
+            else:
+                send_whatsapp_message(phone, "Please reply with 1 or 2.")
+                return "OK", 200
 
-                elif session["step"] == 3:
-                    if text not in ["1", "2", "3"]:
-                        send_whatsapp_message(phone, "Please reply with 1, 2, or 3.")
-                        return "OK", 200
+            session["step"] = 3
+            send_whatsapp_message(
+                phone,
+                "Which course are you interested in?\n\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
+            )
 
-                    course_name, image_url, details = get_course_details(text)
-                    session["interest"] = course_name
-                    session["step"] = 4
+        elif session["step"] == 3:
+            if text not in ["1", "2", "3"]:
+                send_whatsapp_message(phone, "Please reply with 1, 2, or 3.")
+                return "OK", 200
 
-                    send_whatsapp_image(phone, image_url, "SmartVersa Course")
-                    send_whatsapp_message(phone, details)
-                    send_whatsapp_message(
-                        phone,
-                        f"🌐 Website: {WEBSITE_URL}\n\nAre you interested?\n\n1. Yes\n2. No / Need Counsellor"
-                    )
+            course_name, image_url, details = get_course_details(text)
+            session["interest"] = course_name
+            session["step"] = 4
 
-                elif session["step"] == 4:
-                    if text == "1":
-                        session["stage"] = "Hot Lead"
-                        session["step"] = 5
-                        send_whatsapp_message(
-                            phone,
-                            "Great 😊\n\nPlease enter your email (or type SKIP):"
-                        )
-                    elif text == "2":
-                        session["stage"] = "Need Counsellor"
-                        session["step"] = 5
-                        send_whatsapp_message(
-                            phone,
-                            "No worries 😊 Counsellor will contact you.\n\nPlease enter your email (or type SKIP):"
-                        )
-                    else:
-                        send_whatsapp_message(phone, "Please reply with 1 or 2.")
+            send_whatsapp_image(phone, image_url, "SmartVersa Course")
+            send_whatsapp_message(phone, details)
+            send_whatsapp_message(
+                phone,
+                f"🌐 Website: {WEBSITE_URL}\n\nAre you interested?\n\n1. Yes\n2. No / Need Counsellor"
+            )
 
-                elif session["step"] == 5:
-                    if text.upper() == "SKIP":
-                        session["email"] = ""
-                    else:
-                        session["email"] = text
+        elif session["step"] == 4:
+            if text == "1":
+                session["stage"] = "Hot Lead"
+                session["step"] = 5
+                send_whatsapp_message(
+                    phone,
+                    "Great 😊\n\nPlease enter your email (or type SKIP):"
+                )
+            elif text == "2":
+                session["stage"] = "Need Counsellor"
+                session["step"] = 5
+                send_whatsapp_message(
+                    phone,
+                    "No worries 😊 Counsellor will contact you.\n\nPlease enter your email (or type SKIP):"
+                )
+            else:
+                send_whatsapp_message(phone, "Please reply with 1 or 2.")
 
-                    save_lead(phone, session)
+        elif session["step"] == 5:
+            if text.upper() == "SKIP":
+                session["email"] = ""
+            else:
+                session["email"] = text
 
-                    if session["stage"] == "Hot Lead":
-                        send_whatsapp_message(
-                            phone,
-                            f"🎉 Enrollment Link:\n{PAYMENT_URL}"
-                        )
-                    else:
-                        send_whatsapp_message(
-                            phone,
-                            "✅ Your request has been sent to counsellor."
-                        )
+            save_lead(phone, session)
 
-                    del user_sessions[phone]
+            if session["stage"] == "Hot Lead":
+                send_whatsapp_message(
+                    phone,
+                    f"🎉 Enrollment Link:\n{PAYMENT_URL}"
+                )
+            else:
+                send_whatsapp_message(
+                    phone,
+                    "✅ Your request has been sent to counsellor."
+                )
 
-        except Exception as e:
-            print("WEBHOOK ERROR:", e)
+            del user_sessions[phone]
 
-        return "OK", 200
-    
- @app.route("/send_manual", methods=["POST"])
+    except Exception as e:
+        print("WEBHOOK ERROR:", e)
+
+    return "OK", 200
+
+
+@app.route("/send_manual", methods=["POST"])
 def send_manual():
     password = request.form.get("password")
     if password != ADMIN_PASSWORD:
@@ -376,24 +402,66 @@ def send_manual():
     return redirect(f"/dashboard?phone={phone}&password={password}")
 
 
+LOGIN_PAGE = """
+<html>
+<head>
+    <title>SmartVersa Admin Login</title>
+    <style>
+        body {{
+            font-family:Arial, sans-serif;
+            background:#f4f6fb;
+            height:100vh;
+            margin:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }}
+        .box {{
+            background:white;
+            padding:40px;
+            border-radius:14px;
+            box-shadow:0 4px 20px rgba(0,0,0,0.08);
+            text-align:center;
+        }}
+        input {{
+            padding:10px 14px;
+            border-radius:8px;
+            border:1px solid #ccc;
+            margin:10px 0;
+            width:220px;
+        }}
+        button {{
+            padding:10px 20px;
+            border:none;
+            background:#25d366;
+            color:white;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:bold;
+        }}
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>SmartVersa Admin Login</h2>
+        <form method="GET">
+            <input type="password" name="password" placeholder="Password" autofocus/><br>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+</body>
+</html>
+"""
+
+
 @app.route("/dashboard")
 def dashboard():
-    password = request.args.get("password")
+    password = request.args.get("password", "")
     search = request.args.get("search", "").strip()
-    selected_phone = request.args.get("phone")
+    selected_phone = request.args.get("phone", "")
 
     if password != ADMIN_PASSWORD:
-        return """
-        <html>
-        <body style='font-family:Arial;padding:50px;background:#f4f6fb'>
-            <h2>SmartVersa Admin Login</h2>
-            <form method='GET'>
-                <input type='password' name='password' placeholder='Password'/>
-                <button type='submit'>Login</button>
-            </form>
-        </body>
-        </html>
-        """
+        return LOGIN_PAGE
 
     try:
         records = messages_sheet.get_all_records()
@@ -403,20 +471,19 @@ def dashboard():
 
     leads = {}
     for row in records:
-        phone = str(row["Phone"])
+        phone = str(row.get("Phone", "")).strip()
+        if not phone:
+            continue
         if search and search not in phone:
             continue
-        if phone not in leads:
-            leads[phone] = []
-        leads[phone].append(row)
+        leads.setdefault(phone, []).append(row)
 
     chat_html = ""
-
     if selected_phone and selected_phone in leads:
         for msg in leads[selected_phone]:
-            sender = msg["Sender"]
-            message = msg["Message"]
-            time = msg["Time"]
+            sender = msg.get("Sender", "")
+            message = escape_html(msg.get("Message", ""))
+            time = escape_html(msg.get("Time", ""))
 
             if sender == "User":
                 bg = "#dcf8c6"
@@ -428,34 +495,55 @@ def dashboard():
                 bg = "#f0f0f0"
                 align = "left"
 
-            chat_html += f'''
-            <div style="text-align:{align};margin:10px;">
-                <div style="display:inline-block;background:{bg};padding:12px;border-radius:15px;max-width:70%;">
-                    <b>{sender}</b><br>
+            chat_html += f"""
+            <div style="text-align:{align};margin:10px 0;">
+                <div style="display:inline-block;background:{bg};padding:12px 16px;border-radius:15px;max-width:70%;text-align:left;">
+                    <b>{escape_html(sender)}</b><br>
                     {message}
                     <div style="font-size:11px;color:gray;margin-top:6px;">{time}</div>
                 </div>
             </div>
-            '''
+            """
 
-    html = f"""
+    leads_html = ""
+    for phone in leads:
+        active = "background:#d9f2d9;" if phone == selected_phone else ""
+        leads_html += f"""
+        <div class="lead" style="{active}">
+            <a href="/dashboard?password={password}&phone={phone}&search={search}">{escape_html(phone)}</a>
+        </div>
+        """
+
+    if not leads_html:
+        leads_html = "<p style='color:gray;'>No leads found.</p>"
+
+    chat_title = escape_html(selected_phone) if selected_phone else "Select a lead"
+
+    html_page = f"""
     <html>
     <head>
         <title>SmartVersa CRM</title>
         <style>
+            * {{
+                box-sizing:border-box;
+            }}
             body {{
                 margin:0;
-                font-family:Arial;
+                font-family:Arial, sans-serif;
                 display:flex;
                 height:100vh;
                 background:#ece5dd;
             }}
             .left {{
                 width:30%;
+                min-width:260px;
                 background:white;
                 border-right:1px solid #ddd;
                 overflow:auto;
                 padding:20px;
+            }}
+            .left h2 {{
+                margin-top:0;
             }}
             .right {{
                 width:70%;
@@ -482,12 +570,25 @@ def dashboard():
                 padding:20px;
                 border-top:1px solid #ddd;
             }}
+            .searchform {{
+                display:flex;
+                gap:8px;
+                margin-bottom:16px;
+            }}
+            input[type=text], input[name=search] {{
+                padding:8px 10px;
+                border-radius:8px;
+                border:1px solid #ccc;
+                flex:1;
+            }}
             textarea {{
                 width:100%;
                 height:70px;
                 border-radius:10px;
                 padding:12px;
                 border:1px solid #ccc;
+                font-family:Arial, sans-serif;
+                resize:vertical;
             }}
             button {{
                 padding:10px 20px;
@@ -496,6 +597,7 @@ def dashboard():
                 color:white;
                 border-radius:10px;
                 cursor:pointer;
+                font-weight:bold;
             }}
             a {{
                 text-decoration:none;
@@ -507,36 +609,25 @@ def dashboard():
     <body>
         <div class="left">
             <h2>SmartVersa CRM</h2>
-
-            <form method="GET">
+            <form method="GET" class="searchform">
                 <input type="hidden" name="password" value="{password}">
-                <input name="search" placeholder="Search number..." value="{search}">
-                <button type="submit">Search</button>
+                <input type="text" name="search" placeholder="Search number..." value="{escape_html(search)}">
+                <button type="submit">Go</button>
             </form>
-            <br>
-    """
-
-     for phone in leads:
-        html += f"""
-        <div class='lead'>
-            <a href='/dashboard?password={password}&phone={phone}'>{phone}</a>
-        </div>
-        """
-
-    html += f"""
+            {leads_html}
         </div>
 
         <div class="right">
-            <div class="chat">
-                <h3>Chat: {selected_phone if selected_phone else "Select Lead"}</h3>
+            <div class="chat" id="chatBox">
+                <h3>Chat: {chat_title}</h3>
                 {chat_html}
             </div>
 
             <div class="sendbox">
-                <form method="POST" action="/send_manual">
+                <form method="POST" action="/send_manual" id="sendForm">
                     <input type="hidden" name="password" value="{password}">
-                    <input type="hidden" name="phone" value="{selected_phone if selected_phone else ''}">
-                    <textarea name="msg" placeholder="Type message..."></textarea>
+                    <input type="hidden" name="phone" value="{escape_html(selected_phone)}">
+                    <textarea name="msg" id="msgBox" placeholder="Type message..." required></textarea>
                     <br><br>
                     <button type="submit">Send</button>
                 </form>
@@ -544,20 +635,42 @@ def dashboard():
         </div>
 
         <script>
-        setInterval(() => {{
-            const textarea = document.querySelector("textarea");
+            (function () {{
+                var msgBox = document.getElementById("msgBox");
+                var searchBox = document.querySelector("input[name=search]");
+                var isTyping = false;
 
-            if (!textarea || document.activeElement !== textarea) {{
-                location.reload();
-            }}
-        }}, 20000);
+                function markTyping() {{ isTyping = true; }}
+                function markNotTyping() {{ isTyping = false; }}
+
+                if (msgBox) {{
+                    msgBox.addEventListener("focus", markTyping);
+                    msgBox.addEventListener("input", markTyping);
+                    msgBox.addEventListener("blur", markNotTyping);
+                }}
+                if (searchBox) {{
+                    searchBox.addEventListener("focus", markTyping);
+                    searchBox.addEventListener("input", markTyping);
+                    searchBox.addEventListener("blur", markNotTyping);
+                }}
+
+                setInterval(function () {{
+                    var active = document.activeElement;
+                    var userIsTyping = isTyping || active === msgBox || active === searchBox;
+                    var hasDraft = msgBox && msgBox.value.trim().length > 0;
+
+                    if (!userIsTyping && !hasDraft) {{
+                        window.location.reload();
+                    }}
+                }}, 20000);
+            }})();
         </script>
     </body>
     </html>
     """
-    return html
+    return html_page
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    app.run(host="0.0.0.0", port=port)      
+    app.run(host="0.0.0.0", port=port)
