@@ -402,7 +402,11 @@ def dashboard():
         </html>
         """
 
-    records = messages_sheet.get_all_records()
+        try:
+            records = messages_sheet.get_all_records()
+        except Exception as e:
+            print("SHEET ERROR:", e)
+            records = []
 
     leads = {}
     for row in records:
@@ -585,7 +589,7 @@ setInterval(() => {{
     if (!textarea || document.activeElement !== textarea) {{
         location.reload();
     }}
-}}, 5000);
+}}, 20000);
 </script>
 
 
