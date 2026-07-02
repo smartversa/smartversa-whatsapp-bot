@@ -8,6 +8,8 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+print("NEW APP VERSION LOADED 999")
+
 # ================= CONFIG =================
 VERIFY_TOKEN = "smartversa_bot_2026"
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
