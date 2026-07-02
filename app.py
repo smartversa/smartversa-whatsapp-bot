@@ -446,7 +446,6 @@ def dashboard():
     <html>
     <head>
     <title>SmartVersa CRM</title>
-    <meta http-equiv="refresh" content="5">
     <style>
         body {{
             margin:0;
@@ -558,6 +557,33 @@ def dashboard():
                 </form>
             </div>
         </div>
+        
+        <script>
+let isTyping = false;
+
+const textarea = document.querySelector("textarea");
+
+if (textarea) {
+    textarea.addEventListener("focus", () => {
+        isTyping = true;
+    });
+
+    textarea.addEventListener("blur", () => {
+        isTyping = false;
+    });
+
+    textarea.addEventListener("input", () => {
+        isTyping = true;
+    });
+}
+
+setInterval(() => {
+    if (!isTyping) {
+        location.reload();
+    }
+}, 5000);
+</script>
+
     </body>
     </html>
     """
