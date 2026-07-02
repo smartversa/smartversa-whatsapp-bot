@@ -596,11 +596,16 @@ def dashboard():
             }});
         }}
 
-        setInterval(() => {{
-            if (!isTyping) {{
-                location.reload();
-            }}
-        }}, 5000);
+        <script>
+setInterval(() => {{
+    const textarea = document.querySelector("textarea");
+
+    if (!textarea || document.activeElement !== textarea) {{
+        location.reload();
+    }}
+}}, 5000);
+</script>
+
         </script>
     </body>
     </html>
