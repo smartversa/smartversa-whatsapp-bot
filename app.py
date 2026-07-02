@@ -539,6 +539,26 @@ def dashboard():
         """
 
     html += f"""
+    <body>
+        <div class="left">
+            <h2>SmartVersa CRM</h2>
+
+            <form method="GET">
+                <input type="hidden" name="password" value="{password}">
+                <input name="search" placeholder="Search number..." value="{request.args.get('search', '')}">
+                <button type="submit">Search</button>
+            </form>
+            <br>
+    """
+
+    for phone in leads:
+        html += f"""
+        <div class='lead'>
+            <a href='/dashboard?password={password}&phone={phone}'>{phone}</a>
+        </div>
+        """
+
+    html += f"""
         </div>
 
         <div class="right">
@@ -557,37 +577,34 @@ def dashboard():
                 </form>
             </div>
         </div>
-        
+
         <script>
-let isTyping = false;
+        let isTyping = false;
+        const textarea = document.querySelector("textarea");
 
-const textarea = document.querySelector("textarea");
+        if (textarea) {{
+            textarea.addEventListener("focus", () => {{
+                isTyping = true;
+            }});
 
-if (textarea) {
-    textarea.addEventListener("focus", () => {
-        isTyping = true;
-    });
+            textarea.addEventListener("blur", () => {{
+                isTyping = false;
+            }});
 
-    textarea.addEventListener("blur", () => {
-        isTyping = false;
-    });
+            textarea.addEventListener("input", () => {{
+                isTyping = true;
+            }});
+        }}
 
-    textarea.addEventListener("input", () => {
-        isTyping = true;
-    });
-}
-
-setInterval(() => {
-    if (!isTyping) {
-        location.reload();
-    }
-}, 5000);
-</script>
-
+        setInterval(() => {{
+            if (!isTyping) {{
+                location.reload();
+            }}
+        }}, 5000);
+        </script>
     </body>
     </html>
     """
-
     return html
 
 
