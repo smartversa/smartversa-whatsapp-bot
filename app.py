@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template_string, redirect
+from flask import Flask, request, redirect
 import os
 import json
 import gspread
@@ -8,21 +8,21 @@ from datetime import datetime
 
 app = Flask(__name__)
 
+# ================= CONFIG =================
 VERIFY_TOKEN = "smartversa_bot_2026"
 WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN")
 PHONE_NUMBER_ID = "1207113965816609"
 
 WEBSITE_URL = "https://smartversa.in"
 PAYMENT_URL = "https://pay.smartversa.in/orderform"
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "smartversa123")
 
 AI_IMAGE_URL = "https://images.unsplash.com/photo-1551288049-bebda4e38f71"
 DM_IMAGE_URL = "https://images.unsplash.com/photo-1552664730-d307ca884978"
 
-ADMIN_PASSWORD = "smartversa123"   # change later
-
 user_sessions = {}
 
-# ---------------- Google Sheets ----------------
+# ================= GOOGLE SHEETS =================
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
@@ -37,7 +37,7 @@ sheet = client.open(sheet_name).sheet1
 messages_sheet = sheet.spreadsheet.worksheet("Messages")
 
 
-# ---------------- Message Logging ----------------
+# ================= HELPERS =================
 def save_message(phone, sender, message):
     now = datetime.now()
     row = [
@@ -50,7 +50,6 @@ def save_message(phone, sender, message):
     messages_sheet.append_row(row)
 
 
-# ---------------- WhatsApp Text ----------------
 def send_whatsapp_message(to, text, sender="Bot"):
     url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
 
@@ -67,14 +66,12 @@ def send_whatsapp_message(to, text, sender="Bot"):
     }
 
     response = requests.post(url, headers=headers, json=payload)
-
     save_message(to, sender, text)
 
     print("STATUS:", response.status_code)
     print("RESPONSE:", response.text)
 
 
-# ---------------- WhatsApp Image ----------------
 def send_whatsapp_image(to, image_url, caption=""):
     url = f"https://graph.facebook.com/v23.0/{PHONE_NUMBER_ID}/messages"
 
@@ -99,7 +96,6 @@ def send_whatsapp_image(to, image_url, caption=""):
     print(response.text)
 
 
-# ---------------- Save Lead ----------------
 def save_lead(phone, session):
     now = datetime.now()
 
@@ -125,7 +121,6 @@ def save_lead(phone, session):
     sheet.append_row(row)
 
 
-# ---------------- Course Details ----------------
 def get_course_details(choice):
     if choice == "1":
         return (
@@ -173,10 +168,10 @@ Price: ₹4999"""
 📈 Digital Marketing — ₹4999"""
         )
 
+
 @app.route("/")
 def home():
     return "SmartVersa Bot Running"
-
 
 @app.route("/followup")
 def run_followup():
@@ -289,7 +284,6 @@ def webhook():
 
                 session = user_sessions[phone]
 
-                # Step 1 Name
                 if session["step"] == 1:
                     session["name"] = text
                     session["step"] = 2
@@ -298,7 +292,6 @@ def webhook():
                         "Preferred Language?\n\n1. Hindi\n2. English"
                     )
 
-                # Step 2 Language
                 elif session["step"] == 2:
                     if text == "1":
                         session["language"] = "Hindi"
@@ -314,7 +307,6 @@ def webhook():
                         "Which course are you interested in?\n\n1. AI & Data Science\n2. Digital Marketing\n3. Both"
                     )
 
-                # Step 3 Course
                 elif session["step"] == 3:
                     if text not in ["1", "2", "3"]:
                         send_whatsapp_message(phone, "Please reply with 1, 2, or 3.")
@@ -331,7 +323,6 @@ def webhook():
                         f"🌐 Website: {WEBSITE_URL}\n\nAre you interested?\n\n1. Yes\n2. No / Need Counsellor"
                     )
 
-                # Step 4 Interest
                 elif session["step"] == 4:
                     if text == "1":
                         session["stage"] = "Hot Lead"
@@ -351,7 +342,6 @@ def webhook():
                     else:
                         send_whatsapp_message(phone, "Please reply with 1 or 2.")
 
-                # Step 5 Email
                 elif session["step"] == 5:
                     if text.upper() == "SKIP":
                         session["email"] = ""
@@ -377,7 +367,7 @@ def webhook():
             print("ERROR:", e)
 
         return "OK", 200
-
+    
 @app.route("/send_manual", methods=["POST"])
 def send_manual():
     password = request.form.get("password")
@@ -397,13 +387,14 @@ def send_manual():
 @app.route("/dashboard")
 def dashboard():
     password = request.args.get("password")
+    search = request.args.get("search", "").strip()
 
     if password != ADMIN_PASSWORD:
         return """
         <html>
-        <body style='font-family:Arial;padding:50px'>
+        <body style='font-family:Arial;padding:50px;background:#f4f6fb'>
             <h2>SmartVersa Admin Login</h2>
-            <form>
+            <form method='GET'>
                 <input type='password' name='password' placeholder='Password'/>
                 <button type='submit'>Login</button>
             </form>
@@ -416,6 +407,8 @@ def dashboard():
     leads = {}
     for row in records:
         phone = str(row["Phone"])
+        if search and search not in phone:
+            continue
         if phone not in leads:
             leads[phone] = []
         leads[phone].append(row)
@@ -427,73 +420,116 @@ def dashboard():
         for msg in leads[selected_phone]:
             sender = msg["Sender"]
             message = msg["Message"]
+            time = msg["Time"]
 
             if sender == "User":
-                bg = "#DCF8C6"
+                bg = "#dcf8c6"
                 align = "left"
             elif sender == "Admin":
-                bg = "#D9EFFF"
+                bg = "#d9efff"
                 align = "right"
             else:
-                bg = "#F0F0F0"
+                bg = "#f0f0f0"
                 align = "left"
 
             chat_html += f"""
-            <div style='text-align:{align};margin:8px'>
-                <span style='background:{bg};padding:10px;border-radius:10px;display:inline-block;max-width:70%'>
-                    <b>{sender}:</b><br>{message}
-                </span>
+            <div style='text-align:{align};margin:10px'>
+                <div style='display:inline-block;background:{bg};padding:12px;border-radius:15px;max-width:70%'>
+                    <b>{sender}</b><br>
+                    {message}
+                    <div style='font-size:11px;color:gray;margin-top:6px'>{time}</div>
+                </div>
             </div>
             """
 
     html = f"""
     <html>
     <head>
-    <title>SmartVersa Dashboard</title>
+    <title>SmartVersa CRM</title>
+    <meta http-equiv="refresh" content="5">
     <style>
         body {{
             margin:0;
             font-family:Arial;
             display:flex;
             height:100vh;
+            background:#ece5dd;
         }}
+
         .left {{
             width:30%;
+            background:white;
             border-right:1px solid #ddd;
             overflow:auto;
             padding:20px;
         }}
+
         .right {{
             width:70%;
             display:flex;
             flex-direction:column;
+            background:#efeae2;
         }}
+
         .chat {{
             flex:1;
             overflow:auto;
             padding:20px;
-            background:#fafafa;
         }}
+
         .lead {{
-            padding:12px;
-            margin-bottom:8px;
-            border:1px solid #ddd;
-            border-radius:8px;
+            padding:14px;
+            margin-bottom:10px;
+            border-radius:12px;
+            background:#f8f8f8;
+            transition:0.2s;
         }}
+
+        .lead:hover {{
+            background:#eaf7ea;
+        }}
+
         .sendbox {{
+            background:white;
             padding:20px;
             border-top:1px solid #ddd;
         }}
+
         textarea {{
             width:100%;
-            height:80px;
+            height:70px;
+            border-radius:10px;
+            padding:12px;
+            border:1px solid #ccc;
+        }}
+
+        button {{
+            padding:10px 20px;
+            border:none;
+            background:#25d366;
+            color:white;
+            border-radius:10px;
+            cursor:pointer;
+        }}
+
+        a {{
+            text-decoration:none;
+            color:black;
+            font-weight:bold;
         }}
     </style>
     </head>
 
     <body>
         <div class="left">
-            <h2>Leads</h2>
+            <h2>SmartVersa CRM</h2>
+
+            <form method="GET">
+                <input type="hidden" name="password" value="{password}">
+                <input name="search" placeholder="Search number..." value="{search}">
+                <button type="submit">Search</button>
+            </form>
+            <br>
     """
 
     for phone in leads:
@@ -516,7 +552,8 @@ def dashboard():
                 <form method="POST" action="/send_manual">
                     <input type="hidden" name="password" value="{password}">
                     <input type="hidden" name="phone" value="{selected_phone if selected_phone else ''}">
-                    <textarea name="msg" placeholder="Type message..."></textarea><br><br>
+                    <textarea name="msg" placeholder="Type message..."></textarea>
+                    <br><br>
                     <button type="submit">Send</button>
                 </form>
             </div>
