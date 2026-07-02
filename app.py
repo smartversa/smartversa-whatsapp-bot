@@ -91,7 +91,6 @@ def send_whatsapp_image(to, image_url, caption=""):
     }
 
     response = requests.post(url, headers=headers, json=payload)
-
     save_message(to, "Bot", f"[IMAGE] {caption}")
     print(response.text)
 
@@ -120,8 +119,7 @@ def save_lead(phone, session):
 
     sheet.append_row(row)
 
-
-def get_course_details(choice):
+    def get_course_details(choice):
     if choice == "1":
         return (
             "AI & Data Science",
@@ -173,21 +171,20 @@ Price: ₹4999"""
 def home():
     return "SmartVersa Bot Running"
 
+
 @app.route("/followup")
 def run_followup():
-    records = sheet.get_all_records()
+    try:
+        records = sheet.get_all_records()
+    except:
+        return "Sheet error"
 
     for idx, row in enumerate(records, start=2):
         try:
-            stage = row["Stage"]
-            payment = row["Payment Status"]
-            followup1 = row["Followup1 Sent"]
-            followup2 = row["Followup2 Sent"]
-
-            if stage != "Hot Lead":
+            if row["Stage"] != "Hot Lead":
                 continue
 
-            if payment == "Paid":
+            if row["Payment Status"] == "Paid":
                 continue
 
             lead_date = row["Date"]
@@ -206,30 +203,24 @@ def run_followup():
             phone = row["Phone"]
             name = row["Name"]
 
-            if hours_passed >= 24 and followup1 != "Yes":
-                msg = f"""Hi {name} 👋
-
-Need help with enrollment?
-
-Reply anytime 😊"""
-
-                send_whatsapp_message(phone, msg)
+            if hours_passed >= 24 and row["Followup1 Sent"] != "Yes":
+                send_whatsapp_message(
+                    phone,
+                    f"Hi {name} 👋\n\nNeed help with enrollment?\n\nReply anytime 😊"
+                )
                 sheet.update_cell(idx, 15, "Yes")
 
-            elif hours_passed >= 72 and followup2 != "Yes":
-                msg = f"""Final reminder 😊
-
-Enroll now:
-{PAYMENT_URL}"""
-
-                send_whatsapp_message(phone, msg)
+            elif hours_passed >= 72 and row["Followup2 Sent"] != "Yes":
+                send_whatsapp_message(
+                    phone,
+                    f"Final reminder 😊\n\nEnroll now:\n{PAYMENT_URL}"
+                )
                 sheet.update_cell(idx, 16, "Yes")
 
         except Exception as e:
             print("FOLLOWUP ERROR:", e)
 
     return "Follow-up completed"
-
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
@@ -331,7 +322,6 @@ def webhook():
                             phone,
                             "Great 😊\n\nPlease enter your email (or type SKIP):"
                         )
-
                     elif text == "2":
                         session["stage"] = "Need Counsellor"
                         session["step"] = 5
@@ -364,11 +354,11 @@ def webhook():
                     del user_sessions[phone]
 
         except Exception as e:
-            print("ERROR:", e)
+            print("WEBHOOK ERROR:", e)
 
         return "OK", 200
     
-@app.route("/send_manual", methods=["POST"])
+ @app.route("/send_manual", methods=["POST"])
 def send_manual():
     password = request.form.get("password")
     if password != ADMIN_PASSWORD:
@@ -388,6 +378,7 @@ def send_manual():
 def dashboard():
     password = request.args.get("password")
     search = request.args.get("search", "").strip()
+    selected_phone = request.args.get("phone")
 
     if password != ADMIN_PASSWORD:
         return """
@@ -402,11 +393,11 @@ def dashboard():
         </html>
         """
 
-        try:
-            records = messages_sheet.get_all_records()
-        except Exception as e:
-            print("SHEET ERROR:", e)
-            records = []
+    try:
+        records = messages_sheet.get_all_records()
+    except Exception as e:
+        print("SHEET ERROR:", e)
+        records = []
 
     leads = {}
     for row in records:
@@ -417,7 +408,6 @@ def dashboard():
             leads[phone] = []
         leads[phone].append(row)
 
-    selected_phone = request.args.get("phone")
     chat_html = ""
 
     if selected_phone and selected_phone in leads:
@@ -436,93 +426,82 @@ def dashboard():
                 bg = "#f0f0f0"
                 align = "left"
 
-            chat_html += f"""
-            <div style='text-align:{align};margin:10px'>
-                <div style='display:inline-block;background:{bg};padding:12px;border-radius:15px;max-width:70%'>
+            chat_html += f'''
+            <div style="text-align:{align};margin:10px;">
+                <div style="display:inline-block;background:{bg};padding:12px;border-radius:15px;max-width:70%;">
                     <b>{sender}</b><br>
                     {message}
-                    <div style='font-size:11px;color:gray;margin-top:6px'>{time}</div>
+                    <div style="font-size:11px;color:gray;margin-top:6px;">{time}</div>
                 </div>
             </div>
-            """
+            '''
 
     html = f"""
     <html>
     <head>
-    <title>SmartVersa CRM</title>
-    <style>
-        body {{
-            margin:0;
-            font-family:Arial;
-            display:flex;
-            height:100vh;
-            background:#ece5dd;
-        }}
-
-        .left {{
-            width:30%;
-            background:white;
-            border-right:1px solid #ddd;
-            overflow:auto;
-            padding:20px;
-        }}
-
-        .right {{
-            width:70%;
-            display:flex;
-            flex-direction:column;
-            background:#efeae2;
-        }}
-
-        .chat {{
-            flex:1;
-            overflow:auto;
-            padding:20px;
-        }}
-
-        .lead {{
-            padding:14px;
-            margin-bottom:10px;
-            border-radius:12px;
-            background:#f8f8f8;
-            transition:0.2s;
-        }}
-
-        .lead:hover {{
-            background:#eaf7ea;
-        }}
-
-        .sendbox {{
-            background:white;
-            padding:20px;
-            border-top:1px solid #ddd;
-        }}
-
-        textarea {{
-            width:100%;
-            height:70px;
-            border-radius:10px;
-            padding:12px;
-            border:1px solid #ccc;
-        }}
-
-        button {{
-            padding:10px 20px;
-            border:none;
-            background:#25d366;
-            color:white;
-            border-radius:10px;
-            cursor:pointer;
-        }}
-
-        a {{
-            text-decoration:none;
-            color:black;
-            font-weight:bold;
-        }}
-    </style>
+        <title>SmartVersa CRM</title>
+        <style>
+            body {{
+                margin:0;
+                font-family:Arial;
+                display:flex;
+                height:100vh;
+                background:#ece5dd;
+            }}
+            .left {{
+                width:30%;
+                background:white;
+                border-right:1px solid #ddd;
+                overflow:auto;
+                padding:20px;
+            }}
+            .right {{
+                width:70%;
+                display:flex;
+                flex-direction:column;
+                background:#efeae2;
+            }}
+            .chat {{
+                flex:1;
+                overflow:auto;
+                padding:20px;
+            }}
+            .lead {{
+                padding:14px;
+                margin-bottom:10px;
+                border-radius:12px;
+                background:#f8f8f8;
+            }}
+            .lead:hover {{
+                background:#eaf7ea;
+            }}
+            .sendbox {{
+                background:white;
+                padding:20px;
+                border-top:1px solid #ddd;
+            }}
+            textarea {{
+                width:100%;
+                height:70px;
+                border-radius:10px;
+                padding:12px;
+                border:1px solid #ccc;
+            }}
+            button {{
+                padding:10px 20px;
+                border:none;
+                background:#25d366;
+                color:white;
+                border-radius:10px;
+                cursor:pointer;
+            }}
+            a {{
+                text-decoration:none;
+                color:black;
+                font-weight:bold;
+            }}
+        </style>
     </head>
-
     <body>
         <div class="left">
             <h2>SmartVersa CRM</h2>
@@ -535,27 +514,7 @@ def dashboard():
             <br>
     """
 
-    for phone in leads:
-        html += f"""
-        <div class='lead'>
-            <a href='/dashboard?password={password}&phone={phone}'>{phone}</a>
-        </div>
-        """
-
-    html += f"""
-    <body>
-        <div class="left">
-            <h2>SmartVersa CRM</h2>
-
-            <form method="GET">
-                <input type="hidden" name="password" value="{password}">
-                <input name="search" placeholder="Search number..." value="{request.args.get('search', '')}">
-                <button type="submit">Search</button>
-            </form>
-            <br>
-    """
-
-    for phone in leads:
+     for phone in leads:
         html += f"""
         <div class='lead'>
             <a href='/dashboard?password={password}&phone={phone}'>{phone}</a>
@@ -582,17 +541,15 @@ def dashboard():
             </div>
         </div>
 
-<script>
-setInterval(() => {{
-    const textarea = document.querySelector("textarea");
+        <script>
+        setInterval(() => {{
+            const textarea = document.querySelector("textarea");
 
-    if (!textarea || document.activeElement !== textarea) {{
-        location.reload();
-    }}
-}}, 20000);
-</script>
-
-
+            if (!textarea || document.activeElement !== textarea) {{
+                location.reload();
+            }}
+        }}, 20000);
+        </script>
     </body>
     </html>
     """
@@ -601,4 +558,4 @@ setInterval(() => {{
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port)      
