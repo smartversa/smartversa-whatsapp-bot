@@ -578,25 +578,7 @@ def dashboard():
             </div>
         </div>
 
-        <script>
-        let isTyping = false;
-        const textarea = document.querySelector("textarea");
-
-        if (textarea) {{
-            textarea.addEventListener("focus", () => {{
-                isTyping = true;
-            }});
-
-            textarea.addEventListener("blur", () => {{
-                isTyping = false;
-            }});
-
-            textarea.addEventListener("input", () => {{
-                isTyping = true;
-            }});
-        }}
-
-        <script>
+<script>
 setInterval(() => {{
     const textarea = document.querySelector("textarea");
 
@@ -606,7 +588,7 @@ setInterval(() => {{
 }}, 5000);
 </script>
 
-        </script>
+
     </body>
     </html>
     """
