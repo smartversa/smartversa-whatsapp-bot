@@ -25,6 +25,7 @@ from knowledge import (
 # phone -> session dict
 _sessions = {}
 
+
 # Lead stages
 STAGE_NEW = "New Lead"
 STAGE_CONTACTED = "Contacted"
@@ -38,6 +39,86 @@ _FAQ_PRIORITY = ["payment", "price", "certificate", "internship", "placement",
 
 _RESTART_WORDS = {"restart", "reset", "menu", "start over", "start again", "shuru"}
 
+# ============================================================
+# SmartVersa Bot V2.1
+# Natural Language Dictionaries
+# These allow users to reply using normal words instead of only numbers.
+# ============================================================
+
+YES_WORDS = {
+    "1", "yes", "haan", "ha", "ok", "okay",
+    "sure", "join", "enroll", "interested", "start",
+
+    # Additional natural replies
+    "yes please",
+    "lets join",
+    "let's join",
+    "i am interested",
+    "continue",
+    "go ahead"
+}
+
+NO_WORDS = {
+    "2", "no", "nahi", "nah", "later",
+    "call", "counsellor", "human", "talk",
+
+    # Additional natural replies
+    "not interested",
+    "not now",
+    "maybe later",
+    "skip"
+}
+
+
+
+DETAIL_WORDS = {
+    "details", "detail", "info",
+    "information", "more", "course details"
+}
+AI_WORDS = {
+    "1",
+    "ai",
+    "ai course",
+    "data science",
+    "ai & data science",
+    "machine learning",
+    "python",
+    "analytics",
+
+    # Related keywords
+    "artificial intelligence",
+    "data analyst",
+    "data analytics",
+    "power bi",
+    "excel"
+}
+
+DM_WORDS = {
+    "2",
+    "digital marketing",
+    "marketing",
+    "seo",
+    "meta ads",
+    "social media",
+
+    # Related keywords
+    "instagram",
+    "facebook ads",
+    "google ads",
+    "ads",
+    "content marketing"
+}
+
+BOTH_WORDS = {
+    "3",
+    "both",
+    "dono",
+    "all"
+}
+
+def normalize(text):
+    """Normalize user input for comparison."""
+    return (text or "").strip().lower()
 
 def _new_session(wa_name, first_text):
     return {
@@ -229,30 +310,70 @@ def handle(phone, text, wa_name=""):
         return
 
     if step == 2:
-        mapping = {"1": "Hindi", "2": "English", "3": "Hinglish"}
-        if text in mapping:
-            sess["language"] = mapping[text]
+        mapping = {
+            "1": "Hindi",
+            "2": "English",
+            "3": "Hinglish",
+            "hindi": "Hindi",
+            "english": "English",
+            "hinglish": "Hinglish",
+            "eng": "English",
+            "en": "English",
+            "hi": "Hindi"
+        }
+
+        # Normalize user input before checking
+        text_normal = normalize(text)
+
+        if text_normal in mapping:
+            sess["language"] = mapping[text_normal]
             sess["step"] = 3
             _send(phone, sess, _ask_course(sess))
         else:
             _answer_or_reprompt(phone, sess, intents, _ask_language(sess))
+
         return
+
 
     if step == 3:
-        if text in ("1", "2", "3"):
-            if _send_course(phone, sess, text):
+        text_normal = normalize(text)
+
+        # Convert natural language into numeric choice
+        if text_normal in AI_WORDS:
+            choice = "1"
+        elif text_normal in DM_WORDS:
+            choice = "2"
+        elif text_normal in BOTH_WORDS:
+            choice = "3"
+        else:
+            choice = text
+
+        if choice in ("1", "2", "3"):
+            if _send_course(phone, sess, choice):
                 sess["step"] = 4
                 lang = _lang(sess)
-                q = ("Are you interested?\n\n1. Yes, enroll me\n2. Talk to a counsellor"
-                     if lang == "English" else
-                     "Interested?\n\n1. Haan, enroll karna hai\n2. Counsellor se baat karni hai")
+
+                q = (
+                    "Are you interested?\n\n"
+                    "1. Yes, enroll me\n"
+                    "2. Talk to a counsellor"
+                    if lang == "English"
+                    else
+                    "Interested?\n\n"
+                    "1. Haan, enroll karna hai\n"
+                    "2. Counsellor se baat karni hai"
+                )
+
                 _send(phone, sess, q)
+
         else:
             _answer_or_reprompt(phone, sess, intents, _ask_course(sess))
+
         return
 
+
     if step == 4:
-        if text == "1":
+        if normalize(text) in YES_WORDS:
             sess["stage"] = STAGE_HOT
             sess["score"] += 20
             sess["step"] = 5
@@ -260,7 +381,7 @@ def handle(phone, text, wa_name=""):
             _send(phone, sess,
                   ("Great 😊 Please share your email (or type SKIP):"
                    if lang != "Hindi" else "बढ़िया 😊 अपना email दें (या SKIP लिखें):"))
-        elif text == "2":
+        elif normalize(text) in NO_WORDS:
             sess["stage"] = STAGE_WARM
             sess["step"] = 5
             _send(phone, sess, _handoff_message(sess) +
@@ -286,7 +407,7 @@ def handle(phone, text, wa_name=""):
                    "✅ Counsellor ko bhej diya. Meanwhile kuch bhi poochho!"))
         return
 
-    # ---------------- Open conversation (post-onboarding) ----------------
+    # ---------------- Open conversation (post-onboarding) ---------------
     _open_conversation(phone, sess, text, intents)
 
 
@@ -309,6 +430,23 @@ def _answer_or_reprompt(phone, sess, intents, prompt):
 
 def _open_conversation(phone, sess, text, intents):
     # If the user is ready to pay, always give the link and mark the stage.
+    # -------------------------------------------------------
+# If the user asks for course details again,
+# resend the selected course information.
+# -------------------------------------------------------
+
+    if normalize(text) in DETAIL_WORDS:
+
+        if sess.get("interest") == "AI & Data Science":
+            _send_course(phone, sess, "1")
+            return
+
+        elif sess.get("interest") == "Digital Marketing":
+            _send_course(phone, sess, "2")
+            return
+        elif sess.get("interest") == "Both":
+            _send_course(phone, sess, "3")
+            return
     if "payment" in intents:
         _send(phone, sess, _enroll_message(sess))
         sess["stage"] = STAGE_PAYMENT_SENT
