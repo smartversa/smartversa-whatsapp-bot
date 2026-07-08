@@ -10,6 +10,20 @@ import re
 from config import Config
 
 # --------------------------------------------------------------------------- #
+# Company
+# --------------------------------------------------------------------------- #
+COMPANY = {
+    "name": "SmartVersa",
+    "registration": "Active MSME-registered company",
+    "location": "Haryana, India",
+    "website": "https://smartversa.in",
+    "support_email": "team@smartversa.in",
+    "whatsapp_support": "+91 9306539879",
+    "support_hours": "10:00 AM to 7:00 PM (IST)",
+    "response_time": "2–3 hours (typical)",
+}
+
+# --------------------------------------------------------------------------- #
 # Courses
 # --------------------------------------------------------------------------- #
 COURSES = {
@@ -17,7 +31,7 @@ COURSES = {
         "name": "AI & Data Science",
         "price": 1299,
         "image": Config.AI_IMAGE_URL,
-        "duration": "Self-paced with live-style project guidance",
+        "duration": "Self-paced, recorded classes only — complete at your own speed",
         "level": "Beginner to Intermediate (no coding required)",
         "modules": [
             "AI Foundation (AI, ML, Data Science basics)",
@@ -28,6 +42,7 @@ COURSES = {
         ],
         "projects": ["Sales Dashboard (Power BI)", "Python Data Analysis project"],
         "roles": ["Data Analyst Intern", "Junior Analyst", "BI Analyst"],
+        "includes": ["Certificate issued by SmartVersa", "Internship", "Real Projects"],
         "details": (
             "🤖 *AI & Data Science Program*\n\n"
             "✔ Python from scratch\n"
@@ -35,17 +50,18 @@ COURSES = {
             "✔ SQL + Power BI dashboards\n"
             "✔ Machine Learning basics\n"
             "✔ 2 real-world projects\n"
-            "✔ Internship-style experience\n"
-            "✔ Resume & portfolio building\n\n"
+            "✔ Internship\n"
+            "✔ Certificate issued by SmartVersa\n"
+            "✔ Recorded classes — 100% self-paced\n\n"
             "👨‍🎓 Best for: students, freshers, career switchers (no coding needed)\n"
-            "💰 Price: ₹1299"
+            "💰 Price: ₹1299 (GST included)"
         ),
     },
     "2": {
         "name": "Digital Marketing",
         "price": 4999,
         "image": Config.DM_IMAGE_URL,
-        "duration": "Self-paced with real project work",
+        "duration": "Self-paced, recorded classes only — complete at your own speed",
         "level": "Beginner to Advanced (no experience required)",
         "modules": [
             "Digital Marketing Foundations",
@@ -61,6 +77,7 @@ COURSES = {
             "Lead Generation Funnel",
         ],
         "roles": ["Social Media Manager", "Digital Marketer", "Freelancer", "Growth Marketer"],
+        "includes": ["Certificate issued by SmartVersa", "Internship", "Real Projects"],
         "details": (
             "📈 *Digital Marketing Program*\n\n"
             "✔ Facebook / Instagram / Meta Ads\n"
@@ -68,9 +85,11 @@ COURSES = {
             "✔ Branding & audience growth\n"
             "✔ Lead generation & funnels\n"
             "✔ 4 real projects\n"
-            "✔ Freelancing focused\n\n"
+            "✔ Internship\n"
+            "✔ Certificate issued by SmartVersa\n"
+            "✔ Recorded classes — 100% self-paced\n\n"
             "👨‍🎓 Best for: students, freelancers, creators, business owners\n"
-            "💰 Price: ₹4999"
+            "💰 Price: ₹4999 (GST included)"
         ),
     },
 }
@@ -89,22 +108,56 @@ def course_by_choice(choice):
 
 
 # --------------------------------------------------------------------------- #
+# Placement support (confirmed scope — never promise guaranteed jobs)
+# --------------------------------------------------------------------------- #
+PLACEMENT_SUPPORT = [
+    "Resume Building",
+    "Resume Review",
+    "LinkedIn Optimization",
+    "Interview Preparation",
+    "Career Guidance",
+]
+
+# --------------------------------------------------------------------------- #
+# Refund policy (confirmed — never promise automatic refunds)
+# --------------------------------------------------------------------------- #
+REFUND_POLICY = (
+    "Refunds are available only for valid and genuine reasons, after review by the "
+    "SmartVersa team. Refunds are not automatic."
+)
+
+# --------------------------------------------------------------------------- #
+# Payment (confirmed)
+# --------------------------------------------------------------------------- #
+PAYMENT_INFO = {
+    "gateway": "Razorpay",
+    "gst_included": True,
+}
+
+
+# --------------------------------------------------------------------------- #
 # Intent detection
 # --------------------------------------------------------------------------- #
 INTENT_KEYWORDS = {
-    "price":       ["price", "fee", "fees", "cost", "kitna", "kitne", "paisa", "rupees", "₹", "charge", "amount"],
+    "price":       ["price", "fee", "fees", "cost", "kitna", "kitne", "paisa", "rupees", "₹", "charge", "amount", "gst", "tax"],
     "duration":    ["duration", "how long", "kitne din", "kitna time", "months", "weeks", "time lagega"],
     "syllabus":    ["syllabus", "curriculum", "modules", "topics", "content", "kya sikhaya", "what will i learn"],
     "certificate": ["certificate", "certification", "certi", "internship certificate"],
     "internship":  ["internship", "intern", "job guarantee", "experience letter"],
     "refund":      ["refund", "money back", "cancel", "return"],
-    "placement":   ["placement", "job", "naukri", "hiring", "salary", "package", "career"],
-    "timing":      ["timing", "schedule", "class time", "kab", "when", "live class", "recording"],
-    "payment":     ["pay", "payment", "buy", "enroll", "enrol", "join", "purchase", "khareed", "payment link", "how to pay"],
+    "placement":   ["placement", "job", "naukri", "hiring", "salary", "package", "career", "resume", "linkedin", "interview prep", "interview preparation"],
+    "timing":      ["timing", "schedule", "class time", "kab", "when", "live class", "recording", "recorded"],
+    "payment":     ["pay", "payment", "buy", "enroll", "enrol", "join", "purchase", "khareed", "payment link", "how to pay", "razorpay", "upi", "card"],
     "prerequisite":["prerequisite", "coding required", "programming", "background", "eligibility", "qualification"],
     "restart":     ["restart", "start over", "reset", "menu", "start again", "shuru"],
     "human":       ["counsellor", "counselor", "human", "agent", "talk to", "call me", "baat karni"],
     "greeting":    ["hi", "hello", "hey", "namaste", "hii", "helo", "start"],
+    "about":       ["about smartversa", "who are you", "company details", "genuine company",
+                    "trustworthy", "is this legit", "legit", "scam", "fraud", "registered company",
+                    "msme", "location", "address", "where are you located", "website"],
+    "support":     ["support", "contact you", "helpdesk", "help desk", "response time",
+                    "working hours", "office hours", "customer care", "reach you", "email id",
+                    "whatsapp number", "support email"],
 }
 
 # Scoring per the brief
@@ -161,43 +214,45 @@ def faq_answer(intent: str, language: str) -> str:
 
     table = {
         "price": {
-            "English": f"💰 Course fees:\n• AI & Data Science — ₹{ai['price']}\n• Digital Marketing — ₹{dm['price']}",
-            "Hindi":   f"💰 कोर्स फीस:\n• AI & Data Science — ₹{ai['price']}\n• Digital Marketing — ₹{dm['price']}",
-            "Hinglish":f"💰 Course fees:\n• AI & Data Science — ₹{ai['price']}\n• Digital Marketing — ₹{dm['price']}",
+            "English": f"💰 Course fees (GST included):\n• AI & Data Science — ₹{ai['price']}\n• Digital Marketing — ₹{dm['price']}",
+            "Hindi":   f"💰 कोर्स फीस (GST शामिल):\n• AI & Data Science — ₹{ai['price']}\n• Digital Marketing — ₹{dm['price']}",
+            "Hinglish":f"💰 Course fees (GST included):\n• AI & Data Science — ₹{ai['price']}\n• Digital Marketing — ₹{dm['price']}",
         },
         "duration": {
-            "English": "⏳ Both programs are self-paced with project guidance, so you can finish at your own speed.",
-            "Hindi":   "⏳ दोनों प्रोग्राम self-paced हैं, आप अपनी speed से project guidance के साथ complete कर सकते हैं।",
-            "Hinglish":"⏳ Dono programs self-paced hain — apni speed se project guidance ke saath complete kar sakte ho.",
+            "English": "⏳ Classes are recorded only (no live classes) and fully self-paced — completion time depends on your own learning speed.",
+            "Hindi":   "⏳ Classes recorded हैं (कोई live class नहीं) और पूरी तरह self-paced — completion आपकी अपनी speed पर depend करता है।",
+            "Hinglish":"⏳ Classes recorded hain (koi live class nahi) aur fully self-paced — completion aapki apni speed par depend karta hai.",
         },
         "certificate": {
-            "English": "🏅 Yes — you get an internship-style certificate (issued with company stamp & signature) on completion.",
-            "Hindi":   "🏅 हाँ — course complete करने पर आपको internship certificate मिलता है (company stamp और signature के साth)।",
-            "Hinglish":"🏅 Haan — completion par internship certificate milta hai (company stamp & signature ke saath).",
+            "English": "🏅 Yes — you get a certificate issued by SmartVersa on completion of the course.",
+            "Hindi":   "🏅 हाँ — course complete करने पर SmartVersa की तरफ से certificate मिलता है।",
+            "Hinglish":"🏅 Haan — course complete karne par SmartVersa ki taraf se certificate milta hai.",
         },
         "internship": {
-            "English": "💼 Both programs are internship-style with real projects, so you build actual work experience.",
-            "Hindi":   "💼 दोनों प्रोग्राम internship-style हैं, real projects के साथ — जिससे actual experience बनता है।",
-            "Hinglish":"💼 Dono programs internship-style hain, real projects ke saath — actual experience banta hai.",
+            "English": "💼 Both programs include an internship along with real projects, so you build actual work experience.",
+            "Hindi":   "💼 दोनों programs में internship included है, real projects के साथ — जिससे actual experience बनता है।",
+            "Hinglish":"💼 Dono programs mein internship included hai, real projects ke saath — actual experience banta hai.",
         },
         "refund": {
-            "English": "🔁 For any refund or cancellation query, our counsellor will help you directly. Shall I connect you?",
-            "Hindi":   "🔁 Refund/cancellation के लिए हमारा counsellor आपकी help करेगा। क्या मैं connect करूँ?",
-            "Hinglish":"🔁 Refund/cancellation ke liye counsellor directly help karega. Connect karun?",
+            "English": f"🔁 {REFUND_POLICY} Would you like me to connect you with our counsellor to review your case?",
+            "Hindi":   f"🔁 Refund सिर्फ valid और genuine reasons के लिए, review के बाद दिया जाता है — automatic नहीं। क्या counsellor से connect करूँ?",
+            "Hinglish":f"🔁 Refund sirf valid aur genuine reasons ke liye, review ke baad diya jaata hai — automatic nahi. Counsellor se connect karun?",
         },
         "placement": {
-            "English": ("🚀 You'll be job-ready for roles like "
-                        f"{', '.join(ai['roles'][:2])} (AI track) or "
-                        f"{', '.join(dm['roles'][:2])} (Marketing track), with a portfolio to show."),
-            "Hindi":   ("🚀 Course के बाद आप job-ready होंगे — जैसे "
-                        f"{', '.join(ai['roles'][:2])} या {', '.join(dm['roles'][:2])} — portfolio के साth।"),
-            "Hinglish":("🚀 Course ke baad job-ready ban jaoge — jaise "
-                        f"{', '.join(ai['roles'][:2])} ya {', '.join(dm['roles'][:2])} — portfolio ke saath."),
+            "English": ("🚀 SmartVersa provides placement support: " + ", ".join(PLACEMENT_SUPPORT) +
+                        ". We can't guarantee jobs or placements, but we help you become genuinely job-ready "
+                        f"for roles like {', '.join(ai['roles'][:2])} (AI track) or {', '.join(dm['roles'][:2])} (Marketing track)."),
+            "Hindi":   ("🚀 SmartVersa placement support देता है: " + ", ".join(PLACEMENT_SUPPORT) +
+                        "। हम guaranteed job/placement का वादा नहीं करते, लेकिन आपको job-ready बनाते हैं — जैसे "
+                        f"{', '.join(ai['roles'][:2])} या {', '.join(dm['roles'][:2])}।"),
+            "Hinglish":("🚀 SmartVersa placement support deta hai: " + ", ".join(PLACEMENT_SUPPORT) +
+                        ". Hum guaranteed job/placement ka wada nahi karte, lekin job-ready banate hain — jaise "
+                        f"{', '.join(ai['roles'][:2])} ya {', '.join(dm['roles'][:2])}."),
         },
         "timing": {
-            "English": "🕒 It's flexible — self-paced learning with recordings, so you study whenever suits you.",
-            "Hindi":   "🕒 Timing flexible है — recordings के साth self-paced, जब चाहें पढ़ें।",
-            "Hinglish":"🕒 Timing flexible hai — recordings ke saath self-paced, jab chaaho padho.",
+            "English": "🕒 There are no live classes — all sessions are pre-recorded, so you can study whenever suits you.",
+            "Hindi":   "🕒 कोई live class नहीं है — सारी classes recorded हैं, जब चाहें पढ़ें।",
+            "Hinglish":"🕒 Koi live class nahi hai — saari classes recorded hain, jab chaaho padho.",
         },
         "prerequisite": {
             "English": "✅ No coding or prior experience needed — both programs start from absolute basics.",
@@ -213,9 +268,34 @@ def faq_answer(intent: str, language: str) -> str:
                         "\n\n📚 Digital Marketing: " + "; ".join(dm["modules"])),
         },
         "payment": {
-            "English": f"✅ You can enroll here:\n{Config.PAYMENT_URL}\n\nNeed help completing it? Just ask.",
-            "Hindi":   f"✅ यहाँ से enroll करें:\n{Config.PAYMENT_URL}\n\nकोई help चाहिए तो बताइए।",
-            "Hinglish":f"✅ Yahan se enroll karo:\n{Config.PAYMENT_URL}\n\nKoi help chahiye toh batao.",
+            "English": f"✅ You can enroll here (secure Razorpay payment, GST included):\n{Config.PAYMENT_URL}\n\nNeed help completing it? Just ask.",
+            "Hindi":   f"✅ यहाँ से enroll करें (Razorpay से secure payment, GST included):\n{Config.PAYMENT_URL}\n\nकोई help चाहिए तो बताइए।",
+            "Hinglish":f"✅ Yahan se enroll karo (Razorpay se secure payment, GST included):\n{Config.PAYMENT_URL}\n\nKoi help chahiye toh batao.",
+        },
+        "about": {
+            "English": (f"🏢 *{COMPANY['name']}* is an {COMPANY['registration']}, based in {COMPANY['location']}.\n"
+                        f"🌐 {COMPANY['website']}\n"
+                        f"📧 {COMPANY['support_email']}"),
+            "Hindi":   (f"🏢 *{COMPANY['name']}* एक {COMPANY['registration']} है, {COMPANY['location']} में based।\n"
+                        f"🌐 {COMPANY['website']}\n"
+                        f"📧 {COMPANY['support_email']}"),
+            "Hinglish":(f"🏢 *{COMPANY['name']}* ek {COMPANY['registration']} hai, {COMPANY['location']} mein based.\n"
+                        f"🌐 {COMPANY['website']}\n"
+                        f"📧 {COMPANY['support_email']}"),
+        },
+        "support": {
+            "English": (f"🙋 You can reach our support team:\n📧 {COMPANY['support_email']}\n"
+                        f"📱 WhatsApp: {COMPANY['whatsapp_support']}\n"
+                        f"🕒 Working hours: {COMPANY['support_hours']}\n"
+                        f"⏱ Typical response time: {COMPANY['response_time']}"),
+            "Hindi":   (f"🙋 हमारी support team से यहाँ संपर्क करें:\n📧 {COMPANY['support_email']}\n"
+                        f"📱 WhatsApp: {COMPANY['whatsapp_support']}\n"
+                        f"🕒 Working hours: {COMPANY['support_hours']}\n"
+                        f"⏱ Typical response time: {COMPANY['response_time']}"),
+            "Hinglish":(f"🙋 Hamari support team se yahan contact karo:\n📧 {COMPANY['support_email']}\n"
+                        f"📱 WhatsApp: {COMPANY['whatsapp_support']}\n"
+                        f"🕒 Working hours: {COMPANY['support_hours']}\n"
+                        f"⏱ Typical response time: {COMPANY['response_time']}"),
         },
     }
 
