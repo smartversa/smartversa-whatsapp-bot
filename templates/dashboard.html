@@ -4,212 +4,534 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SmartVersa CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-           background: #eae6df; color: #111; }
-    .topbar { background: #111827; color: #fff; padding: 10px 18px;
-              display: flex; align-items: center; gap: 18px; }
-    .topbar .brand { font-weight: 800; color: #4ade80; }
-    .topbar .spacer { flex: 1; }
-    .topbar a { color: #cbd5e1; text-decoration: none; font-size: 13px; margin-left: 14px; }
-    .topbar a:hover { color: #fff; }
+    :root{
+      --bg:            #0A0E13;
+      --surface:       #12181F;
+      --surface-2:     #1A222B;
+      --surface-3:     #212B36;
+      --border:        #232E39;
+      --border-soft:   #1B242E;
+      --text:          #E9EEF3;
+      --text-dim:      #97A3AF;
+      --text-faint:    #5E6B78;
+      --brand:         #2BD4A6;
+      --brand-dim:     #1D8F70;
+      --brand-glow:    rgba(43,212,166,.16);
+      --gold:          #E8AA4C;
+      --coral:         #F0685B;
+      --indigo:        #7C93F0;
+      --wa-green:      #25D366;
+      --wa-bubble:     #1F3A2E;
+      --radius-lg:     18px;
+      --radius-md:     12px;
+      --radius-sm:     8px;
+      --shadow:        0 8px 24px rgba(0,0,0,.35);
+      --shadow-sm:     0 2px 8px rgba(0,0,0,.28);
+      font-family: 'Inter', -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+    *{ box-sizing:border-box; }
+    ::selection{ background: var(--brand-glow); color: var(--text); }
+    ::-webkit-scrollbar{ width:8px; height:8px; }
+    ::-webkit-scrollbar-track{ background:transparent; }
+    ::-webkit-scrollbar-thumb{ background:var(--surface-3); border-radius:8px; }
+    ::-webkit-scrollbar-thumb:hover{ background:#2C3846; }
 
-    .cards { display: flex; gap: 12px; padding: 14px 18px; flex-wrap: wrap; background: #f1f5f9; }
-    .card { background: #fff; border-radius: 12px; padding: 12px 16px; min-width: 120px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-    .card .n { font-size: 22px; font-weight: 800; color: #0f172a; }
-    .card .l { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+    body{ margin:0; background:var(--bg); color:var(--text); }
+    a{ color:inherit; }
+    h1,h2,h3,.brand,.title,.name{ font-family:'Lexend', 'Inter', sans-serif; }
+    .mono{ font-family:'JetBrains Mono', monospace; }
 
-    .layout { display: flex; height: calc(100vh - 150px); }
-    .left { width: 32%; min-width: 300px; background: #fff; border-right: 1px solid #e2e8f0;
-            overflow-y: auto; }
-    .filters { padding: 12px; position: sticky; top: 0; background: #fff; border-bottom: 1px solid #eee; }
-    .filters form { display: flex; gap: 6px; flex-wrap: wrap; }
-    .filters input, .filters select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; }
-    .filters input[name=search] { flex: 1; min-width: 120px; }
-    .filters button { padding: 8px 12px; border: none; background: #128c3f; color: #fff;
-                      border-radius: 8px; cursor: pointer; font-weight: 600; }
+    /* ===== Shell ===== */
+    .shell{ display:flex; min-height:100vh; }
 
-    .lead { display: block; padding: 12px 14px; border-bottom: 1px solid #f1f5f9;
-            text-decoration: none; color: #0f172a; }
-    .lead:hover { background: #f8fafc; }
-    .lead.active { background: #e7f7ec; }
-    .lead .row1 { display: flex; justify-content: space-between; align-items: center; }
-    .lead .name { font-weight: 700; }
-    .lead .score { font-size: 12px; font-weight: 700; color: #fff; background: #64748b;
-                   border-radius: 10px; padding: 1px 8px; }
-    .lead .score.hi { background: #dc2626; } .lead .score.md { background: #d97706; }
-    .lead .meta { font-size: 12px; color: #64748b; margin-top: 3px; }
-    .badge { display: none; background: #25d366; color: #fff; font-size: 10px;
-             border-radius: 8px; padding: 0 6px; margin-left: 6px; }
+    /* ===== Sidebar ===== */
+    .sidebar{
+      width:74px; flex-shrink:0; background:var(--surface);
+      border-right:1px solid var(--border-soft);
+      display:flex; flex-direction:column; align-items:center;
+      padding:18px 0; gap:6px; position:sticky; top:0; height:100vh;
+    }
+    .sidebar .logo{
+      width:38px; height:38px; border-radius:11px;
+      background:linear-gradient(145deg,var(--brand),var(--brand-dim));
+      display:flex; align-items:center; justify-content:center;
+      font-weight:800; font-size:15px; color:#06120D; margin-bottom:22px;
+      box-shadow:0 4px 14px var(--brand-glow);
+    }
+    .sidebar .nav-item{
+      width:44px; height:44px; border-radius:var(--radius-sm);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--text-dim); text-decoration:none; font-size:18px;
+      transition:background .15s, color .15s;
+    }
+    .sidebar .nav-item:hover{ background:var(--surface-2); color:var(--text); }
+    .sidebar .nav-item.active{ background:var(--brand-glow); color:var(--brand); }
+    .sidebar .spacer{ flex:1; }
+    .sidebar .avatar{
+      width:36px; height:36px; border-radius:50%;
+      background:var(--surface-3); border:1px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:700; color:var(--text-dim); margin-bottom:8px;
+    }
 
-    .right { flex: 1; display: flex; flex-direction: column; background: #efeae2; }
-    .chat-head { background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 10px 16px;
-                 display: flex; gap: 14px; align-items: flex-start; }
-    .chat-head .title { font-weight: 700; }
-    .panel { font-size: 12px; color: #475569; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .panel form { display: inline-flex; gap: 4px; align-items: center; }
-    .panel select, .panel input[type=text] { padding: 4px 6px; border: 1px solid #cbd5e1; border-radius: 6px; }
-    .panel button { padding: 4px 10px; border: none; border-radius: 6px; cursor: pointer;
-                    background: #334155; color: #fff; font-weight: 600; }
-    .panel button.warn { background: #b91c1c; } .panel button.ok { background: #128c3f; }
+    /* ===== Main column ===== */
+    .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
 
-    .chat { flex: 1; overflow-y: auto; padding: 18px; }
-    .bubble { margin: 8px 0; display: flex; }
-    .bubble .msg { display: inline-block; padding: 9px 13px; border-radius: 12px; max-width: 68%;
-                   font-size: 14px; box-shadow: 0 1px 1px rgba(0,0,0,.08); white-space: pre-wrap; }
-    .bubble.user { justify-content: flex-start; } .bubble.user .msg { background: #fff; }
-    .bubble.bot  { justify-content: flex-start; } .bubble.bot .msg  { background: #f0f0f0; }
-    .bubble.admin { justify-content: flex-end; } .bubble.admin .msg { background: #d9fdd3; }
-    .bubble .t { display: block; font-size: 10px; color: #94a3b8; margin-top: 4px; }
+    .topbar{
+      display:flex; align-items:center; gap:14px;
+      padding:16px 26px; border-bottom:1px solid var(--border-soft);
+      background:linear-gradient(180deg, var(--surface) 0%, var(--bg) 140%);
+    }
+    .topbar .brand{ font-weight:700; font-size:17px; letter-spacing:.01em; }
+    .topbar .brand span{ color:var(--brand); }
+    .topbar .subtitle{ font-size:12px; color:var(--text-faint); margin-top:1px; }
+    .topbar .spacer{ flex:1; }
+    .topbar .user-chip{
+      font-size:12.5px; color:var(--text-dim); background:var(--surface-2);
+      border:1px solid var(--border); padding:6px 12px; border-radius:20px;
+      display:flex; align-items:center; gap:6px;
+    }
+    .topbar a.action{
+      color:var(--text-dim); text-decoration:none; font-size:13px;
+      padding:8px 14px; border-radius:var(--radius-sm); border:1px solid var(--border);
+      transition:all .15s; background:var(--surface-2);
+    }
+    .topbar a.action:hover{ color:var(--text); border-color:var(--brand-dim); }
+    .topbar a.logout:hover{ color:var(--coral); border-color:var(--coral); }
 
-    .quick { padding: 6px 16px; background: #f8fafc; border-top: 1px solid #e2e8f0;
-             display: flex; gap: 6px; flex-wrap: wrap; }
-    .quick button { font-size: 12px; padding: 5px 10px; border: 1px solid #cbd5e1; background: #fff;
-                    border-radius: 14px; cursor: pointer; }
-    .sendbox { background: #f8fafc; padding: 12px 16px; border-top: 1px solid #e2e8f0; }
-    .sendbox textarea { width: 100%; height: 58px; border: 1px solid #cbd5e1; border-radius: 10px;
-                        padding: 10px; resize: vertical; font-family: inherit; font-size: 14px; }
-    .sendbox .actions { margin-top: 8px; text-align: right; }
-    .sendbox button { padding: 9px 22px; border: none; background: #25d366; color: #fff;
-                      border-radius: 10px; cursor: pointer; font-weight: 700; }
-    .empty { color: #94a3b8; padding: 20px; text-align: center; }
-    .notes { white-space: pre-wrap; background:#fffbeb; border:1px solid #fde68a;
-             padding:6px 8px; border-radius:6px; font-size:12px; max-width:260px; }
+    /* ===== Analytics cards ===== */
+    .cards{
+      display:grid; grid-template-columns:repeat(7,1fr); gap:12px;
+      padding:18px 26px; background:var(--bg);
+    }
+    .card{
+      background:var(--surface); border:1px solid var(--border-soft);
+      border-radius:var(--radius-md); padding:15px 16px;
+      position:relative; overflow:hidden; box-shadow:var(--shadow-sm);
+    }
+    .card::before{
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background:var(--accent, var(--brand));
+    }
+    .card .n{ font-family:'Lexend',sans-serif; font-size:24px; font-weight:700; color:var(--text); letter-spacing:-.01em; }
+    .card .l{ font-size:11px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.06em; margin-top:4px; font-weight:600; }
+    .card.c-total{ --accent:var(--indigo); }
+    .card.c-today{ --accent:#8B7CF0; }
+    .card.c-hot{ --accent:var(--coral); }
+    .card.c-warm{ --accent:var(--gold); }
+    .card.c-sales{ --accent:var(--brand); }
+    .card.c-rev{ --accent:#4FC3E8; }
+    .card.c-conv{ --accent:#C084F5; }
+
+    /* ===== Layout: three columns ===== */
+    .layout{ display:flex; flex:1; min-height:0; border-top:1px solid var(--border-soft); }
+
+    /* -- Lead list -- */
+    .left{
+      width:320px; flex-shrink:0; background:var(--surface);
+      border-right:1px solid var(--border-soft); display:flex; flex-direction:column;
+      min-height:0;
+    }
+    .filters{
+      padding:14px; border-bottom:1px solid var(--border-soft); background:var(--surface);
+      position:sticky; top:0; z-index:2;
+    }
+    .filters form{ display:flex; gap:8px; flex-wrap:wrap; }
+    .filters input, .filters select{
+      background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+      padding:9px 11px; border-radius:var(--radius-sm); font-size:13px; font-family:inherit;
+      outline:none; transition:border-color .15s;
+    }
+    .filters input::placeholder{ color:var(--text-faint); }
+    .filters input:focus, .filters select:focus{ border-color:var(--brand-dim); }
+    .filters input[name=search]{ flex:1 1 100%; min-width:120px; }
+    .filters select{ flex:1; }
+    .filters button{
+      padding:9px 16px; border:none; background:var(--brand); color:#06120D;
+      border-radius:var(--radius-sm); cursor:pointer; font-weight:700; font-size:13px;
+      transition:filter .15s;
+    }
+    .filters button:hover{ filter:brightness(1.08); }
+
+    .lead-list{ overflow-y:auto; flex:1; }
+    .lead{
+      display:block; padding:13px 14px; border-bottom:1px solid var(--border-soft);
+      text-decoration:none; color:var(--text); position:relative; transition:background .12s;
+    }
+    .lead:hover{ background:var(--surface-2); }
+    .lead.active{ background:var(--brand-glow); }
+    .lead.active::before{
+      content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--brand);
+    }
+    .lead .row1{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .lead .name{ font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lead .score{
+      font-size:11px; font-weight:700; color:#06120D; background:var(--text-faint);
+      border-radius:10px; padding:2px 9px; flex-shrink:0; font-family:'JetBrains Mono',monospace;
+    }
+    .lead .score.hi{ background:var(--coral); color:#1A0704; }
+    .lead .score.md{ background:var(--gold); color:#211404; }
+    .lead .score.lo{ background:var(--surface-3); color:var(--text-dim); }
+    .lead .meta{ font-size:12px; color:var(--text-faint); margin-top:4px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .lead .meta .dot{ opacity:.5; }
+    .lead .stage-pill{
+      font-size:10.5px; padding:1px 8px; border-radius:8px; background:var(--surface-3);
+      color:var(--text-dim); font-weight:600;
+    }
+    .badge{
+      display:none; background:var(--wa-green); color:#06120D; font-size:10px;
+      font-weight:700; border-radius:8px; padding:1px 7px; margin-left:6px;
+    }
+    .empty{ color:var(--text-faint); padding:32px 20px; text-align:center; font-size:13.5px; }
+
+    /* -- Center: chat -- */
+    .center{ flex:1; min-width:0; display:flex; flex-direction:column; background:var(--bg); }
+    .chat-head{
+      background:var(--surface); border-bottom:1px solid var(--border-soft);
+      padding:14px 20px; display:flex; gap:14px; align-items:center; flex-wrap:wrap;
+    }
+    .chat-head .title{ font-weight:700; font-size:15px; }
+    .chat-head .sub{ font-size:12px; color:var(--text-faint); margin-top:2px; }
+    .chat-head .spacer{ flex:1; }
+    .panel{ font-size:12.5px; color:var(--text-dim); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .panel form{ display:inline-flex; gap:6px; align-items:center; }
+    .panel select, .panel input[type=text]{
+      background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+      padding:6px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:inherit; outline:none;
+    }
+    .panel button{
+      padding:7px 13px; border:none; border-radius:var(--radius-sm); cursor:pointer;
+      background:var(--surface-3); color:var(--text); font-weight:600; font-size:12.5px;
+      border:1px solid var(--border); transition:all .15s;
+    }
+    .panel button:hover{ border-color:var(--text-faint); }
+    .panel button.warn{ background:rgba(240,104,91,.12); color:var(--coral); border-color:rgba(240,104,91,.3); }
+    .panel button.warn:hover{ background:rgba(240,104,91,.2); }
+    .panel button.ok{ background:rgba(43,212,166,.12); color:var(--brand); border-color:rgba(43,212,166,.3); }
+    .panel button.ok:hover{ background:rgba(43,212,166,.2); }
+
+    .chat{
+      flex:1; overflow-y:auto; padding:22px 26px;
+      background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.025) 1px, transparent 0);
+      background-size:22px 22px;
+    }
+    .bubble{ margin:9px 0; display:flex; }
+    .bubble .msg{
+      display:inline-block; padding:10px 14px; border-radius:14px; max-width:66%;
+      font-size:14px; line-height:1.45; white-space:pre-wrap; box-shadow:var(--shadow-sm);
+      position:relative;
+    }
+    .bubble.user{ justify-content:flex-start; }
+    .bubble.user .msg{ background:var(--surface-2); border:1px solid var(--border-soft); border-bottom-left-radius:4px; }
+    .bubble.bot{ justify-content:flex-start; }
+    .bubble.bot .msg{ background:var(--surface); border:1px solid var(--border); border-bottom-left-radius:4px; }
+    .bubble.admin{ justify-content:flex-end; }
+    .bubble.admin .msg{ background:var(--wa-bubble); border:1px solid rgba(43,212,166,.25); border-bottom-right-radius:4px; }
+    .bubble .t{ display:block; font-size:10px; color:var(--text-faint); margin-top:5px; letter-spacing:.02em; }
+
+    .quick{
+      padding:10px 20px; background:var(--surface); border-top:1px solid var(--border-soft);
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .quick button{
+      font-size:12px; padding:7px 13px; border:1px solid var(--border); background:var(--surface-2);
+      color:var(--text-dim); border-radius:16px; cursor:pointer; transition:all .15s; font-family:inherit;
+    }
+    .quick button:hover{ border-color:var(--brand-dim); color:var(--text); }
+
+    .sendbox{ background:var(--surface); padding:14px 20px 18px; border-top:1px solid var(--border-soft); }
+    .sendbox textarea{
+      width:100%; height:56px; background:var(--surface-2); border:1px solid var(--border);
+      color:var(--text); border-radius:var(--radius-md); padding:11px 13px; resize:vertical;
+      font-family:inherit; font-size:14px; outline:none; transition:border-color .15s;
+    }
+    .sendbox textarea:focus{ border-color:var(--brand-dim); }
+    .sendbox textarea::placeholder{ color:var(--text-faint); }
+    .sendbox .actions{ margin-top:9px; text-align:right; }
+    .sendbox button{
+      padding:10px 26px; border:none; background:var(--wa-green); color:#06120D;
+      border-radius:var(--radius-sm); cursor:pointer; font-weight:700; font-size:13.5px;
+      transition:filter .15s;
+    }
+    .sendbox button:hover{ filter:brightness(1.08); }
+
+    .center .empty{ margin:auto; font-size:14px; }
+
+    /* -- Right: lead details -- */
+    .right{
+      width:300px; flex-shrink:0; background:var(--surface);
+      border-left:1px solid var(--border-soft); overflow-y:auto; padding:20px;
+    }
+    .right .empty{ padding:40px 10px; }
+    .detail-card{
+      background:var(--surface-2); border:1px solid var(--border-soft);
+      border-radius:var(--radius-md); padding:18px; margin-bottom:14px;
+    }
+    .detail-avatar{
+      width:52px; height:52px; border-radius:14px; background:linear-gradient(145deg,var(--indigo),#4B5FCF);
+      display:flex; align-items:center; justify-content:center; font-weight:800; font-size:19px;
+      color:#fff; margin-bottom:12px;
+    }
+    .detail-card .dname{ font-weight:700; font-size:15.5px; }
+    .detail-card .dphone{ font-size:12.5px; color:var(--text-faint); margin-top:2px; font-family:'JetBrains Mono',monospace; }
+    .detail-row{
+      display:flex; justify-content:space-between; gap:10px; padding:8px 0;
+      border-top:1px solid var(--border-soft); font-size:12.5px;
+    }
+    .detail-row:first-of-type{ border-top:none; margin-top:12px; }
+    .detail-row .k{ color:var(--text-faint); flex-shrink:0; }
+    .detail-row .v{ color:var(--text); text-align:right; font-weight:500; overflow-wrap:anywhere; }
+    .pill{ display:inline-block; padding:2px 10px; border-radius:9px; font-size:11px; font-weight:700; }
+    .pill.paid{ background:rgba(43,212,166,.15); color:var(--brand); }
+    .pill.unpaid{ background:rgba(240,104,91,.15); color:var(--coral); }
+    .pill.ai-on{ background:rgba(43,212,166,.15); color:var(--brand); }
+    .pill.ai-off{ background:rgba(232,170,76,.15); color:var(--gold); }
+    .notes-box{
+      white-space:pre-wrap; background:var(--surface-3); border:1px solid var(--border);
+      color:var(--text-dim); padding:10px 12px; border-radius:var(--radius-sm); font-size:12px;
+      max-height:180px; overflow-y:auto; line-height:1.5;
+    }
+    .section-label{
+      font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--text-faint);
+      font-weight:700; margin:0 0 10px;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width:1280px){
+      .cards{ grid-template-columns:repeat(4,1fr); }
+      .right{ width:260px; }
+    }
+    @media (max-width:1100px){
+      .right{ display:none; }
+    }
+    @media (max-width:860px){
+      .sidebar{ display:none; }
+      .cards{ grid-template-columns:repeat(3,1fr); padding:14px; }
+      .layout{ flex-direction:column; }
+      .left{ width:100%; border-right:none; border-bottom:1px solid var(--border-soft); max-height:280px; }
+      .center{ min-height:60vh; }
+    }
+    @media (max-width:560px){
+      .cards{ grid-template-columns:repeat(2,1fr); }
+      .topbar{ padding:12px 16px; }
+      .topbar .subtitle{ display:none; }
+      .bubble .msg{ max-width:84%; }
+    }
   </style>
 </head>
 <body>
-  <div class="topbar">
-    <span class="brand">SmartVersa CRM</span>
-    <span class="spacer"></span>
-    <span style="font-size:13px;color:#94a3b8;">👤 {{ user }}</span>
-    <a href="/export">⬇ Export CSV</a>
-    <a href="/logout">Logout</a>
-  </div>
-
-  <div class="cards">
-    <div class="card"><div class="n">{{ stats.total }}</div><div class="l">Total Leads</div></div>
-    <div class="card"><div class="n">{{ stats.today }}</div><div class="l">Today</div></div>
-    <div class="card"><div class="n">{{ stats.hot }}</div><div class="l">Hot Leads</div></div>
-    <div class="card"><div class="n">{{ stats.sales }}</div><div class="l">Sales</div></div>
-    <div class="card"><div class="n">₹{{ stats.revenue }}</div><div class="l">Revenue</div></div>
-    <div class="card"><div class="n">{{ stats.conversion_rate }}%</div><div class="l">Conversion</div></div>
-  </div>
-
-  <div class="layout">
-    <!-- Lead list -->
-    <div class="left">
-      <div class="filters">
-        <form method="GET" action="/dashboard">
-          <input type="text" name="search" placeholder="Search name / phone / email" value="{{ search }}">
-          <select name="stage">
-            <option value="">All stages</option>
-            {% for s in stages %}
-              <option value="{{ s }}" {% if s == stage_filter %}selected{% endif %}>{{ s }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit">Go</button>
-        </form>
-      </div>
-
-      {% if leads %}
-        {% for l in leads %}
-          {% set sc = l['Lead Score']|int %}
-          <a class="lead {% if l['Phone']|string == selected %}active{% endif %}"
-             href="/dashboard?phone={{ l['Phone'] }}&search={{ search }}&stage={{ stage_filter }}"
-             data-phone="{{ l['Phone'] }}">
-            <div class="row1">
-              <span class="name">{{ l['Name'] or l['WhatsApp Name'] or l['Phone'] }}
-                <span class="badge" data-badge="{{ l['Phone'] }}">new</span></span>
-              <span class="score {% if sc >= 40 %}hi{% elif sc >= 15 %}md{% endif %}">{{ sc }}</span>
-            </div>
-            <div class="meta">{{ l['Phone'] }} · {{ l['Course Interest'] or '—' }} · {{ l['Stage'] or 'New Lead' }}</div>
-          </a>
-        {% endfor %}
-      {% else %}
-        <div class="empty">No leads found.</div>
-      {% endif %}
+  <div class="shell">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">SV</div>
+      <a class="nav-item active" title="Dashboard" href="/dashboard">⌂</a>
+      <a class="nav-item" title="Export" href="/export">⬇</a>
+      <div class="spacer"></div>
+      <div class="avatar">{{ user[:1]|upper if user else '?' }}</div>
+      <a class="nav-item" title="Logout" href="/logout">⏻</a>
     </div>
 
-    <!-- Chat + panel -->
-    <div class="right">
-      {% if selected %}
-        <div class="chat-head">
-          <div>
-            <div class="title">{{ (lead['Name'] if lead else '') or selected }}</div>
-            <div style="font-size:12px;color:#64748b;">{{ selected }}
-              {% if lead %}· score {{ lead['Lead Score'] }} · {{ lead['Priority'] or '—' }} priority{% endif %}</div>
-          </div>
-          <div class="panel">
-            <form method="POST" action="/lead_action">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-              <input type="hidden" name="phone" value="{{ selected }}">
-              <input type="hidden" name="action" value="set_stage">
-              <select name="stage" onchange="this.form.submit()">
+    <div class="main">
+      <!-- Topbar -->
+      <div class="topbar">
+        <div>
+          <div class="brand">SmartVersa <span>CRM</span></div>
+          <div class="subtitle">AI admission counsellor · WhatsApp desk</div>
+        </div>
+        <div class="spacer"></div>
+        <div class="user-chip">👤 {{ user }}</div>
+        <a class="action" href="/export">⬇ Export CSV</a>
+        <a class="action logout" href="/logout">Logout</a>
+      </div>
+
+      <!-- Analytics -->
+      <div class="cards">
+        <div class="card c-total"><div class="n">{{ stats.total }}</div><div class="l">Total Leads</div></div>
+        <div class="card c-today"><div class="n">{{ stats.today }}</div><div class="l">New Today</div></div>
+        <div class="card c-warm"><div class="n">{{ stats.warm }}</div><div class="l">Warm Leads</div></div>
+        <div class="card c-hot"><div class="n">{{ stats.hot }}</div><div class="l">Hot Leads</div></div>
+        <div class="card c-sales"><div class="n">{{ stats.sales }}</div><div class="l">Converted</div></div>
+        <div class="card c-rev"><div class="n">₹{{ stats.revenue }}</div><div class="l">Revenue</div></div>
+        <div class="card c-conv"><div class="n">{{ stats.conversion_rate }}%</div><div class="l">Conversion</div></div>
+      </div>
+
+      <!-- Layout -->
+      <div class="layout">
+        <!-- Lead list -->
+        <div class="left">
+          <div class="filters">
+            <form method="GET" action="/dashboard">
+              <input type="text" name="search" placeholder="Search name / phone / email" value="{{ search }}">
+              <select name="stage">
+                <option value="">All stages</option>
                 {% for s in stages %}
-                  <option value="{{ s }}" {% if lead and s == lead['Stage'] %}selected{% endif %}>{{ s }}</option>
+                  <option value="{{ s }}" {% if s == stage_filter %}selected{% endif %}>{{ s }}</option>
                 {% endfor %}
               </select>
+              <button type="submit">Go</button>
             </form>
-            {% if lead and (lead['AI Paused']|string|lower == 'yes') %}
-              <form method="POST" action="/lead_action">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <input type="hidden" name="phone" value="{{ selected }}">
-                <input type="hidden" name="action" value="resume_ai">
-                <button class="ok" type="submit">▶ Resume AI</button>
-              </form>
+          </div>
+
+          <div class="lead-list">
+            {% if leads %}
+              {% for l in leads %}
+                {% set sc = l['Lead Score']|int %}
+                <a class="lead {% if l['Phone']|string == selected %}active{% endif %}"
+                   href="/dashboard?phone={{ l['Phone'] }}&search={{ search }}&stage={{ stage_filter }}"
+                   data-phone="{{ l['Phone'] }}">
+                  <div class="row1">
+                    <span class="name">{{ l['Name'] or l['WhatsApp Name'] or l['Phone'] }}
+                      <span class="badge" data-badge="{{ l['Phone'] }}">new</span></span>
+                    <span class="score {% if sc >= 40 %}hi{% elif sc >= 15 %}md{% else %}lo{% endif %}">{{ sc }}</span>
+                  </div>
+                  <div class="meta">
+                    <span>{{ l['Phone'] }}</span><span class="dot">·</span>
+                    <span>{{ l['Course Interest'] or '—' }}</span>
+                    <span class="stage-pill">{{ l['Stage'] or 'New Lead' }}</span>
+                  </div>
+                </a>
+              {% endfor %}
             {% else %}
-              <form method="POST" action="/lead_action">
+              <div class="empty">No leads found.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Chat -->
+        <div class="center">
+          {% if selected %}
+            <div class="chat-head">
+              <div>
+                <div class="title">{{ (lead['Name'] if lead else '') or selected }}</div>
+                <div class="sub">{{ selected }}
+                  {% if lead %}· score {{ lead['Lead Score'] }} · {{ lead['Priority'] or '—' }} priority{% endif %}</div>
+              </div>
+              <div class="spacer"></div>
+              <div class="panel">
+                <form method="POST" action="/lead_action">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                  <input type="hidden" name="phone" value="{{ selected }}">
+                  <input type="hidden" name="action" value="set_stage">
+                  <select name="stage" onchange="this.form.submit()">
+                    {% for s in stages %}
+                      <option value="{{ s }}" {% if lead and s == lead['Stage'] %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                  </select>
+                </form>
+                {% if lead and (lead['AI Paused']|string|lower == 'yes') %}
+                  <form method="POST" action="/lead_action">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="phone" value="{{ selected }}">
+                    <input type="hidden" name="action" value="resume_ai">
+                    <button class="ok" type="submit">▶ Resume AI</button>
+                  </form>
+                {% else %}
+                  <form method="POST" action="/lead_action">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <input type="hidden" name="phone" value="{{ selected }}">
+                    <input type="hidden" name="action" value="pause_ai">
+                    <button class="warn" type="submit">⏸ Take over (pause AI)</button>
+                  </form>
+                {% endif %}
+                <form method="POST" action="/lead_action">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                  <input type="hidden" name="phone" value="{{ selected }}">
+                  <input type="hidden" name="action" value="add_note">
+                  <input type="text" name="note" placeholder="Add note…">
+                  <button type="submit">Save</button>
+                </form>
+              </div>
+            </div>
+
+            <div class="chat" id="chatBox">
+              {% for m in chat %}
+                {% set snd = m['Sender']|string %}
+                <div class="bubble {{ 'admin' if snd == 'Admin' else ('user' if snd == 'User' else 'bot') }}">
+                  <div class="msg">{{ m['Message'] }}<span class="t">{{ snd }} · {{ m['Time'] }}</span></div>
+                </div>
+              {% endfor %}
+              {% if not chat %}<div class="empty">No messages yet.</div>{% endif %}
+            </div>
+
+            <div class="quick">
+              <button type="button" onclick="insert('Here is your enrolment link: ' + PAYMENT)">💳 Payment Link</button>
+              <button type="button" onclick="insert('Here are the full course details 👇')">📘 Course Details</button>
+              <button type="button" onclick="insert('Can we schedule a quick call? What time suits you today?')">📞 Schedule Call</button>
+              <button type="button" onclick="insert('Just following up 😊 Did you get a chance to look at the program?')">🔔 Follow-up</button>
+            </div>
+
+            <div class="sendbox">
+              <form method="POST" action="/send_manual" id="sendForm">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <input type="hidden" name="phone" value="{{ selected }}">
-                <input type="hidden" name="action" value="pause_ai">
-                <button class="warn" type="submit">⏸ Take over (pause AI)</button>
+                <textarea name="msg" id="msgBox" placeholder="Type a message…" required></textarea>
+                <div class="actions"><button type="submit">Send</button></div>
               </form>
-            {% endif %}
-            <form method="POST" action="/lead_action">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-              <input type="hidden" name="phone" value="{{ selected }}">
-              <input type="hidden" name="action" value="add_note">
-              <input type="text" name="note" placeholder="Add note…">
-              <button type="submit">Save</button>
-            </form>
-          </div>
-        </div>
-        {% if lead and lead['Notes'] %}
-          <div style="padding:8px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;">
-            <div class="notes">{{ lead['Notes'] }}</div>
-          </div>
-        {% endif %}
-
-        <div class="chat" id="chatBox">
-          {% for m in chat %}
-            {% set snd = m['Sender']|string %}
-            <div class="bubble {{ 'admin' if snd == 'Admin' else ('user' if snd == 'User' else 'bot') }}">
-              <div class="msg">{{ m['Message'] }}<span class="t">{{ snd }} · {{ m['Time'] }}</span></div>
             </div>
-          {% endfor %}
-          {% if not chat %}<div class="empty">No messages yet.</div>{% endif %}
+          {% else %}
+            <div class="empty">Select a lead to view the conversation.</div>
+          {% endif %}
         </div>
 
-        <div class="quick">
-          <button type="button" onclick="insert('Here is your enrolment link: ' + PAYMENT)">💳 Payment Link</button>
-          <button type="button" onclick="insert('Here are the full course details 👇')">📘 Course Details</button>
-          <button type="button" onclick="insert('Can we schedule a quick call? What time suits you today?')">📞 Schedule Call</button>
-          <button type="button" onclick="insert('Just following up 😊 Did you get a chance to look at the program?')">🔔 Follow-up</button>
-        </div>
+        <!-- Lead details -->
+        <div class="right">
+          {% if selected and lead %}
+            <div class="section-label">Lead Details</div>
+            <div class="detail-card">
+              <div class="detail-avatar">{{ ((lead['Name'] or selected)|string)[:1]|upper }}</div>
+              <div class="dname">{{ lead['Name'] or lead['WhatsApp Name'] or '—' }}</div>
+              <div class="dphone">{{ selected }}</div>
 
-        <div class="sendbox">
-          <form method="POST" action="/send_manual" id="sendForm">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <input type="hidden" name="phone" value="{{ selected }}">
-            <textarea name="msg" id="msgBox" placeholder="Type a message…" required></textarea>
-            <div class="actions"><button type="submit">Send</button></div>
-          </form>
+              <div class="detail-row" style="border-top:none; margin-top:14px;">
+                <span class="k">Email</span><span class="v">{{ lead['Email'] or '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="k">Course</span><span class="v">{{ lead['Course Interest'] or '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="k">Stage</span><span class="v">{{ lead['Stage'] or 'New Lead' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="k">Lead Score</span><span class="v">{{ lead['Lead Score'] }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="k">Priority</span><span class="v">{{ lead['Priority'] or '—' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="k">AI Status</span>
+                <span class="v">
+                  {% if lead['AI Paused']|string|lower == 'yes' %}
+                    <span class="pill ai-off">Paused</span>
+                  {% else %}
+                    <span class="pill ai-on">Active</span>
+                  {% endif %}
+                </span>
+              </div>
+              <div class="detail-row">
+                <span class="k">Payment</span>
+                <span class="v">
+                  {% if lead['Payment Status']|string|lower == 'paid' %}
+                    <span class="pill paid">Paid</span>
+                  {% else %}
+                    <span class="pill unpaid">{{ lead['Payment Status'] or 'Unpaid' }}</span>
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+
+            {% if lead['Notes'] %}
+              <div class="section-label">Notes</div>
+              <div class="notes-box">{{ lead['Notes'] }}</div>
+            {% endif %}
+          {% else %}
+            <div class="empty">Lead details will appear here once you select a conversation.</div>
+          {% endif %}
         </div>
-      {% else %}
-        <div class="empty" style="margin:auto;">Select a lead to view the conversation.</div>
-      {% endif %}
+      </div>
     </div>
   </div>
 

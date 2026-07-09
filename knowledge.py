@@ -3,6 +3,13 @@ SmartVersa knowledge base + FAQ engine + intent detection + lead scoring.
 
 This runs with zero AI cost. The optional AI counsellor (ai.py) uses this same
 knowledge base as grounding, so answers stay consistent whether AI is on or off.
+
+Production notes:
+- Every fact in this file is confirmed SmartVersa information. Nothing here is
+  invented (no made-up policies, discounts, offers, guarantees, or steps).
+- Where exact operational detail isn't confirmed (e.g. device specs, demo
+  availability, assignment structure), the FAQ answer says so plainly and
+  offers to connect the student with a human counsellor instead of guessing.
 """
 
 import re
@@ -43,6 +50,15 @@ COURSES = {
         "projects": ["Sales Dashboard (Power BI)", "Python Data Analysis project"],
         "roles": ["Data Analyst Intern", "Junior Analyst", "BI Analyst"],
         "includes": ["Certificate issued by SmartVersa", "Internship", "Real Projects"],
+        "tools": ["Python", "Pandas", "SQL", "Power BI"],
+        "target_audience": "Students, freshers, and career switchers — no coding background needed",
+        "prerequisites": "No coding or prior experience required",
+        "benefits": [
+            "Hands-on real projects",
+            "Internship experience",
+            "Certificate issued by SmartVersa",
+            "Learn fully at your own pace",
+        ],
         "details": (
             "🤖 *AI & Data Science Program*\n\n"
             "✔ Python from scratch\n"
@@ -78,6 +94,15 @@ COURSES = {
         ],
         "roles": ["Social Media Manager", "Digital Marketer", "Freelancer", "Growth Marketer"],
         "includes": ["Certificate issued by SmartVersa", "Internship", "Real Projects"],
+        "tools": ["Meta Ads Manager", "Instagram/Facebook", "SEO tools", "Content planning tools"],
+        "target_audience": "Students, freelancers, creators, and business owners",
+        "prerequisites": "No coding or prior experience required",
+        "benefits": [
+            "Hands-on real campaigns/projects",
+            "Internship experience",
+            "Certificate issued by SmartVersa",
+            "Learn fully at your own pace",
+        ],
         "details": (
             "📈 *Digital Marketing Program*\n\n"
             "✔ Facebook / Instagram / Meta Ads\n"
@@ -132,6 +157,12 @@ REFUND_POLICY = (
 PAYMENT_INFO = {
     "gateway": "Razorpay",
     "gst_included": True,
+    "enrollment_process": "Pay securely through the Razorpay payment link — GST is already included in the listed price.",
+    "payment_confirmation": "Razorpay confirms your payment instantly once the transaction succeeds.",
+    "after_payment_process": (
+        "After payment, the SmartVersa team reaches out to guide you further. "
+        "If you don't hear back, you can contact support directly."
+    ),
 }
 
 
@@ -140,7 +171,7 @@ PAYMENT_INFO = {
 # --------------------------------------------------------------------------- #
 INTENT_KEYWORDS = {
     "price":       ["price", "fee", "fees", "cost", "kitna", "kitne", "paisa", "rupees", "₹", "charge", "amount", "gst", "tax"],
-    "duration":    ["duration", "how long", "kitne din", "kitna time", "months", "weeks", "time lagega"],
+    "duration":    ["duration", "how long", "kitne din", "kitna time", "months", "weeks", "time lagega", "self-paced", "self paced"],
     "syllabus":    ["syllabus", "curriculum", "modules", "topics", "content", "kya sikhaya", "what will i learn"],
     "certificate": ["certificate", "certification", "certi", "internship certificate"],
     "internship":  ["internship", "intern", "job guarantee", "experience letter"],
@@ -151,16 +182,46 @@ INTENT_KEYWORDS = {
     "prerequisite":["prerequisite", "coding required", "programming", "background", "eligibility", "qualification"],
     "restart":     ["restart", "start over", "reset", "menu", "start again", "shuru"],
     "human":       ["counsellor", "counselor", "human", "agent", "talk to", "call me", "baat karni"],
-    "greeting":    ["hi", "hello", "hey", "namaste", "hii", "helo", "start"],
+    "greeting":    ["hi", "hello", "hey", "namaste", "hii", "helo", "start",
+                    "good morning", "good afternoon", "good evening"],
     "about":       ["about smartversa", "who are you", "company details", "genuine company",
                     "trustworthy", "is this legit", "legit", "scam", "fraud", "registered company",
                     "msme", "location", "address", "where are you located", "website"],
     "support":     ["support", "contact you", "helpdesk", "help desk", "response time",
                     "working hours", "office hours", "customer care", "reach you", "email id",
                     "whatsapp number", "support email"],
+    "comparison":  ["difference between", "which course is better", "compare", "vs", "versus",
+                    "better course", "which one should i choose", "which is better",
+                    "which course should i take", "dono me kya difference"],
+    "beginner_doubt": ["beginner", "no experience", "never coded", "can i do this",
+                    "am i eligible for this", "new to this", "confuse", "confused", "doubt",
+                    "not sure if i can", "mujhe nahi aata", "will i understand"],
+    "parents":     ["parents", "mom", "dad", "papa", "mummy", "family", "convince my parents",
+                    "parents allow", "parents agree", "parents not allowing", "ghar wale"],
+    "after_payment": ["after payment", "after paying", "what after enroll", "next steps",
+                    "after enrolling", "payment done", "already paid", "how to start after payment",
+                    "what happens after payment", "payment ho gaya"],
+    "small_talk":  ["how are you", "what's up", "whats up", "who made you", "are you a bot",
+                    "are you human", "your name", "kaise ho", "kaisi ho", "aap kaun ho"],
+    "objection":   ["too expensive", "mehenga", "no time", "not sure", "think about it",
+                    "later", "abhi nahi", "sochna hai", "busy", "expensive", "i'll think"],
+    "projects":    ["projects", "project work", "real project", "hands-on project", "portfolio project"],
+    "device_requirement": ["laptop", "laptop required", "computer required", "device needed",
+                    "system requirement", "pc required", "mobile se ho jayega"],
+    "stream_eligibility": ["commerce student", "arts student", "science student", "any stream",
+                    "bcom", "b.com", "ba student", "bsc student", "12th", "non-tech background",
+                    "humanities student"],
+    "assignments": ["assignment", "assessment", "quiz", "evaluation test"],
+    "experienced": ["already know coding", "already working", "i already know", "experienced in",
+                    "i have experience", "already a developer", "already do marketing",
+                    "already working professional"],
+    "demo":        ["demo", "free trial", "trial class", "sample class", "preview class"],
+    "thanks":      ["thanks", "thank you", "thnx", "shukriya", "dhanyawad"],
+    "acknowledge": ["okay", "fine", "alright", "acha", "theek hai", "sahi hai"],
+    "farewell":    ["bye", "goodbye", "see you", "tata", "milte hain", "chalta hoon"],
 }
 
-# Scoring per the brief
+# Scoring per the brief — reflects buying intent strength
 INTENT_SCORE = {
     "price": 10,
     "certificate": 15,
@@ -168,15 +229,22 @@ INTENT_SCORE = {
     "internship": 10,
     "placement": 8,
     "syllabus": 5,
+    "after_payment": 25,
+    "comparison": 5,
+    "projects": 5,
+    "experienced": 5,
 }
 
 
 def detect_intents(text: str):
+    """Word-boundary aware keyword matching to avoid false positives
+    (e.g. 'hi' no longer matches inside 'this', 'ok' no longer matches inside 'smoke')."""
     t = (text or "").lower()
     found = set()
     for intent, kws in INTENT_KEYWORDS.items():
         for kw in kws:
-            if kw in t:
+            pattern = r"(?<!\w)" + re.escape(kw) + r"(?!\w)"
+            if re.search(pattern, t):
                 found.add(intent)
                 break
     return found
@@ -235,8 +303,8 @@ def faq_answer(intent: str, language: str) -> str:
         },
         "refund": {
             "English": f"🔁 {REFUND_POLICY} Would you like me to connect you with our counsellor to review your case?",
-            "Hindi":   f"🔁 Refund सिर्फ valid और genuine reasons के लिए, review के बाद दिया जाता है — automatic नहीं। क्या counsellor से connect करूँ?",
-            "Hinglish":f"🔁 Refund sirf valid aur genuine reasons ke liye, review ke baad diya jaata hai — automatic nahi. Counsellor se connect karun?",
+            "Hindi":   "🔁 Refund सिर्फ valid और genuine reasons के लिए, review के बाद दिया जाता है — automatic नहीं। क्या counsellor से connect करूँ?",
+            "Hinglish":"🔁 Refund sirf valid aur genuine reasons ke liye, review ke baad diya jaata hai — automatic nahi. Counsellor se connect karun?",
         },
         "placement": {
             "English": ("🚀 SmartVersa provides placement support: " + ", ".join(PLACEMENT_SUPPORT) +
@@ -268,9 +336,12 @@ def faq_answer(intent: str, language: str) -> str:
                         "\n\n📚 Digital Marketing: " + "; ".join(dm["modules"])),
         },
         "payment": {
-            "English": f"✅ You can enroll here (secure Razorpay payment, GST included):\n{Config.PAYMENT_URL}\n\nNeed help completing it? Just ask.",
-            "Hindi":   f"✅ यहाँ से enroll करें (Razorpay से secure payment, GST included):\n{Config.PAYMENT_URL}\n\nकोई help चाहिए तो बताइए।",
-            "Hinglish":f"✅ Yahan se enroll karo (Razorpay se secure payment, GST included):\n{Config.PAYMENT_URL}\n\nKoi help chahiye toh batao.",
+            "English": (f"✅ You can enroll here (secure Razorpay payment, GST included):\n{Config.PAYMENT_URL}\n\n"
+                        f"{PAYMENT_INFO['payment_confirmation']} Need help completing it? Just ask."),
+            "Hindi":   (f"✅ यहाँ से enroll करें (Razorpay से secure payment, GST included):\n{Config.PAYMENT_URL}\n\n"
+                        "Payment successful होते ही Razorpay confirm कर देता है। कोई help चाहिए तो बताइए।"),
+            "Hinglish":(f"✅ Yahan se enroll karo (Razorpay se secure payment, GST included):\n{Config.PAYMENT_URL}\n\n"
+                        "Payment successful hote hi Razorpay confirm kar deta hai. Koi help chahiye toh batao."),
         },
         "about": {
             "English": (f"🏢 *{COMPANY['name']}* is an {COMPANY['registration']}, based in {COMPANY['location']}.\n"
@@ -296,6 +367,131 @@ def faq_answer(intent: str, language: str) -> str:
                         f"📱 WhatsApp: {COMPANY['whatsapp_support']}\n"
                         f"🕒 Working hours: {COMPANY['support_hours']}\n"
                         f"⏱ Typical response time: {COMPANY['response_time']}"),
+        },
+        "greeting": {
+            "English": "👋 Hey there! I'm SmartVersa's assistant. I can help with course details, pricing, or connect you to a counsellor — what would you like to know?",
+            "Hindi":   "👋 नमस्ते! मैं SmartVersa का assistant हूँ। Course details, pricing, या counsellor से connect — जो चाहें पूछिए।",
+            "Hinglish":"👋 Hey! Main SmartVersa ka assistant hoon. Course details, pricing, ya counsellor se connect — jo bhi chahiye poochho.",
+        },
+        "comparison": {
+            "English": ("🤔 Quick comparison:\n"
+                        f"• *AI & Data Science* — ₹{ai['price']}, {ai['level']}. Roles: {', '.join(ai['roles'][:2])}.\n"
+                        f"• *Digital Marketing* — ₹{dm['price']}, {dm['level']}. Roles: {', '.join(dm['roles'][:2])}.\n"
+                        "Both include a certificate, internship and real projects. Want a recommendation based on your interest?"),
+            "Hindi":   ("🤔 Quick comparison:\n"
+                        f"• *AI & Data Science* — ₹{ai['price']}, {ai['level']}. Roles: {', '.join(ai['roles'][:2])}.\n"
+                        f"• *Digital Marketing* — ₹{dm['price']}, {dm['level']}. Roles: {', '.join(dm['roles'][:2])}.\n"
+                        "दोनों में certificate, internship और real projects शामिल हैं। आपके interest के हिसाब से recommendation चाहिए?"),
+            "Hinglish":("🤔 Quick comparison:\n"
+                        f"• *AI & Data Science* — ₹{ai['price']}, {ai['level']}. Roles: {', '.join(ai['roles'][:2])}.\n"
+                        f"• *Digital Marketing* — ₹{dm['price']}, {dm['level']}. Roles: {', '.join(dm['roles'][:2])}.\n"
+                        "Dono mein certificate, internship aur real projects included hain. Aapke interest ke hisaab se recommendation chahiye?"),
+        },
+        "beginner_doubt": {
+            "English": "😊 No worries at all — both programs are built for complete beginners. No coding or prior experience needed; you start from the basics and build real projects step by step.",
+            "Hindi":   "😊 कोई चिंता नहीं — दोनों programs beginners के लिए बने हैं। कोई coding या experience ज़रूरी नहीं, basics से शुरू होकर real projects step by step बनाते हैं।",
+            "Hinglish":"😊 Koi tension nahi — dono programs beginners ke liye hi bane hain. Koi coding ya experience zaroori nahi, basics se shuru karke real projects step by step banate ho.",
+        },
+        "parents": {
+            "English": (f"👨‍👩‍👧 Totally understandable! *{COMPANY['name']}* is an {COMPANY['registration']}, based in {COMPANY['location']} "
+                        f"({COMPANY['website']}). Both programs include a certificate, internship and real projects — "
+                        "happy to share more details you can show your parents, or connect them directly with our counsellor."),
+            "Hindi":   (f"👨‍👩‍👧 बिल्कुल समझ सकता हूँ! *{COMPANY['name']}* एक {COMPANY['registration']} है, {COMPANY['location']} में based "
+                        f"({COMPANY['website']})। दोनों programs में certificate, internship और real projects शामिल हैं — "
+                        "आपके parents को दिखाने के लिए details दे सकता हूँ, या सीधे counsellor से बात करवा सकता हूँ।"),
+            "Hinglish":(f"👨‍👩‍👧 Bilkul samajh sakta hoon! *{COMPANY['name']}* ek {COMPANY['registration']} hai, {COMPANY['location']} mein based "
+                        f"({COMPANY['website']}). Dono programs mein certificate, internship aur real projects included hain — "
+                        "parents ko dikhane ke liye details de sakta hoon, ya seedha counsellor se baat karva sakta hoon."),
+        },
+        "after_payment": {
+            "English": (f"✅ {PAYMENT_INFO['after_payment_process']} "
+                        f"WhatsApp us at {COMPANY['whatsapp_support']} or email {COMPANY['support_email']} "
+                        f"({COMPANY['support_hours']}, typical response time {COMPANY['response_time']}). "
+                        "I can also connect you with a counsellor for the exact next steps."),
+            "Hindi":   (f"✅ Payment के बाद हमारी team आपसे guide करने के लिए contact करेगी। अगर response ना मिले तो "
+                        f"WhatsApp करें {COMPANY['whatsapp_support']} या email करें {COMPANY['support_email']} "
+                        f"({COMPANY['support_hours']}, response time {COMPANY['response_time']})। "
+                        "मैं counsellor से भी connect करवा सकता हूँ।"),
+            "Hinglish":(f"✅ Payment ke baad hamari team aapse guide karne ke liye contact karegi. Response na mile toh "
+                        f"WhatsApp karo {COMPANY['whatsapp_support']} ya email karo {COMPANY['support_email']} "
+                        f"({COMPANY['support_hours']}, response time {COMPANY['response_time']}). "
+                        "Main counsellor se bhi connect karva sakta hoon."),
+        },
+        "small_talk": {
+            "English": "😄 I'm doing great, thanks for asking! I'm SmartVersa's AI assistant, here to help with our AI & Data Science and Digital Marketing programs. What would you like to know?",
+            "Hindi":   "😄 मैं बढ़िया हूँ, पूछने के लिए धन्यवाद! मैं SmartVersa का AI assistant हूँ, AI & Data Science और Digital Marketing programs में help करने के लिए। क्या जानना चाहेंगे?",
+            "Hinglish":"😄 Main badhiya hoon, poochne ke liye thanks! Main SmartVersa ka AI assistant hoon, AI & Data Science aur Digital Marketing programs mein help karne ke liye. Kya jaanna chahoge?",
+        },
+        "objection": {
+            "English": ("💡 Totally fair. Our programs are self-paced (recorded classes), so you learn at your own speed, and the fee "
+                        "(GST included) covers a certificate, internship and real projects — no hidden costs. Take your time, "
+                        "I'm here whenever you have questions!"),
+            "Hindi":   ("💡 समझ सकता हूँ। हमारे programs self-paced (recorded classes) हैं, अपनी speed से पढ़ सकते हैं, और fee "
+                        "(GST included) में certificate, internship और real projects शामिल हैं — कोई hidden cost नहीं। "
+                        "अपना समय लीजिए, कोई सवाल हो तो बताइए!"),
+            "Hinglish":("💡 Samajh sakta hoon. Hamare programs self-paced (recorded classes) hain, apni speed se padh sakte ho, aur fee "
+                        "(GST included) mein certificate, internship aur real projects included hain — koi hidden cost nahi. "
+                        "Apna time lo, koi sawaal ho toh batao!"),
+        },
+        "projects": {
+            "English": ("🛠️ Real projects included:\n"
+                        f"• AI & Data Science: {', '.join(ai['projects'])}\n"
+                        f"• Digital Marketing: {', '.join(dm['projects'])}"),
+            "Hindi":   ("🛠️ Real projects included:\n"
+                        f"• AI & Data Science: {', '.join(ai['projects'])}\n"
+                        f"• Digital Marketing: {', '.join(dm['projects'])}"),
+            "Hinglish":("🛠️ Real projects included:\n"
+                        f"• AI & Data Science: {', '.join(ai['projects'])}\n"
+                        f"• Digital Marketing: {', '.join(dm['projects'])}"),
+        },
+        "device_requirement": {
+            "English": ("💻 A laptop or computer with a stable internet connection gives the best learning experience for recorded video "
+                        "content. I don't have exact confirmed technical specs — I can connect you with a counsellor if you'd like precise details."),
+            "Hindi":   ("💻 Recorded video content के लिए laptop/computer और अच्छा internet होना best रहता है। Exact technical specs confirmed "
+                        "नहीं हैं — चाहें तो counsellor से confirm करवा दूँ।"),
+            "Hinglish":("💻 Recorded video content ke liye laptop/computer aur achha internet hona best rehta hai. Exact technical specs "
+                        "confirmed nahi hain — chaho toh counsellor se confirm karva doon."),
+        },
+        "stream_eligibility": {
+            "English": "✅ Yes! Both programs are open to students from any stream — commerce, arts, or science. No coding or prior experience is required, so your academic background doesn't matter.",
+            "Hindi":   "✅ हाँ! दोनों programs किसी भी stream के students के लिए हैं — commerce, arts, या science। कोई coding या experience ज़रूरी नहीं, background मायने नहीं रखता।",
+            "Hinglish":"✅ Haan! Dono programs kisi bhi stream ke students ke liye hain — commerce, arts, ya science. Koi coding ya experience zaroori nahi, background matter nahi karta.",
+        },
+        "assignments": {
+            "English": ("📝 Both programs are built around hands-on real projects that double as practical assessments. "
+                        "I don't have confirmed details on separate graded assignments/quizzes — I can connect you with a counsellor for that."),
+            "Hindi":   ("📝 दोनों programs real projects पर based हैं, जो practical assessment का काम करते हैं। Separate graded assignments/quiz "
+                        "के बारे में confirmed detail नहीं है — counsellor से connect करवा सकता हूँ।"),
+            "Hinglish":("📝 Dono programs real projects par based hain, jo practical assessment ka kaam karte hain. Separate graded "
+                        "assignments/quiz ke baare mein confirmed detail nahi hai — counsellor se connect karva sakta hoon."),
+        },
+        "experienced": {
+            "English": ("💪 That's great! Since it's fully self-paced, you can move quickly through what you already know and focus on the "
+                        "projects, certificate, and internship to strengthen your portfolio — and it fits around your existing schedule or job."),
+            "Hindi":   ("💪 बढ़िया! चूंकि यह पूरी तरह self-paced है, जो पहले से आता है उसे fast cover कर सकते हैं और projects, certificate, "
+                        "internship पर focus कर सकते हैं — यह आपकी schedule/job के साथ भी fit हो जाता है।"),
+            "Hinglish":("💪 Badhiya! Chunki yeh fully self-paced hai, jo pehle se aata hai wo fast cover kar sakte ho aur projects, "
+                        "certificate, internship pe focus kar sakte ho — yeh aapki schedule/job ke saath bhi fit ho jaata hai."),
+        },
+        "demo": {
+            "English": "🎬 I don't have confirmed details on a free demo/trial class. Let me connect you with a counsellor who can help with that.",
+            "Hindi":   "🎬 Free demo/trial class के बारे में confirmed detail मेरे पास नहीं है। मैं counsellor से connect करवा देता हूँ।",
+            "Hinglish":"🎬 Free demo/trial class ke baare mein confirmed detail mere paas nahi hai. Main counsellor se connect karva deta hoon.",
+        },
+        "thanks": {
+            "English": "You're welcome! 😊 Let me know if you have any other questions.",
+            "Hindi":   "आपका स्वागत है! 😊 कोई और सवाल हो तो बताइए।",
+            "Hinglish":"Koi baat nahi! 😊 Aur koi sawaal ho toh batao.",
+        },
+        "acknowledge": {
+            "English": "👍 Great! Let me know if you'd like to know anything else — pricing, syllabus, or how to enroll.",
+            "Hindi":   "👍 बढ़िया! कुछ और जानना हो — pricing, syllabus, या enroll कैसे करें — तो बताइए।",
+            "Hinglish":"👍 Badhiya! Kuch aur jaanna ho — pricing, syllabus, ya enroll kaise karein — toh batao.",
+        },
+        "farewell": {
+            "English": "👋 Thanks for chatting! Feel free to reach out anytime — have a great day!",
+            "Hindi":   "👋 बात करने के लिए धन्यवाद! जब चाहें फिर से संपर्क करें — आपका दिन शुभ हो!",
+            "Hinglish":"👋 Chat karne ke liye thanks! Jab bhi chaho phir se contact karo — have a great day!",
         },
     }
 

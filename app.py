@@ -14,7 +14,8 @@ Routes:
   GET  /export           download leads CSV (login required)
 """
 
-from datetime import timedelta
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from flask import (
     Flask, request, redirect, render_template, session, Response, abort
@@ -41,6 +42,31 @@ for problem in Config.validate():
     log.warning("CONFIG: %s", problem)
 if not Config.SECRET_KEY_FROM_ENV:
     log.warning("SECRET_KEY not set from env — using a random key (sessions reset on restart).")
+
+
+# --------------------------------------------------------------------------- #
+# Timezone helpers — all "now" values used for follow-up scheduling are
+# anchored to Asia/Kolkata, since that's the timezone the leads themselves
+# are logged in (sheets.py / bot.py write DD-MM-YYYY HH:MM local timestamps).
+# --------------------------------------------------------------------------- #
+IST = ZoneInfo("Asia/Kolkata")
+
+
+def now_ist() -> datetime:
+    """Current time in IST, tz-aware."""
+    return datetime.now(IST)
+
+
+def _parse_sheet_dt(date_str, time_str):
+    """Parse a 'DD-MM-YYYY' + 'HH:MM' pair (as written by sheets.py/bot.py)
+    into a tz-aware IST datetime. Returns None if unparseable/blank."""
+    if not date_str or not time_str:
+        return None
+    try:
+        naive = datetime.strptime(f"{date_str} {time_str}", "%d-%m-%Y %H:%M")
+        return naive.replace(tzinfo=IST)
+    except (ValueError, TypeError):
+        return None
 
 
 # --------------------------------------------------------------------------- #
@@ -83,28 +109,61 @@ def webhook():
         return "Forbidden", 403
 
     raw = request.get_data()
-    if not whatsapp.verify_signature(raw, request.headers.get("X-Hub-Signature-256", "")):
+    try:
+        signature_ok = whatsapp.verify_signature(
+            raw, request.headers.get("X-Hub-Signature-256", "")
+        )
+    except Exception:
+        log.exception("Webhook: signature verification raised an exception")
+        return "Forbidden", 403
+
+    if not signature_ok:
         log.warning("Rejected webhook: bad signature")
         return "Forbidden", 403
 
-    data = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        log.warning("Webhook: request body is missing or not valid JSON")
+        return "OK", 200
+
     try:
-        value = data["entry"][0]["changes"][0]["value"]
-        if "messages" not in value:
+        entries = data.get("entry") or []
+        if not entries:
+            return "OK", 200
+        changes = entries[0].get("changes") or []
+        if not changes:
+            return "OK", 200
+        value = changes[0].get("value") or {}
+
+        messages = value.get("messages") or []
+        if not messages:
+            # Status callbacks (sent/delivered/read) land here too — not an error.
             return "OK", 200
 
-        msg = value["messages"][0]
-        phone = msg["from"]
+        msg = messages[0]
+        phone = msg.get("from")
+        if not phone:
+            log.warning("Webhook: message missing sender phone number")
+            return "OK", 200
+
         wa_name = ""
-        if "contacts" in value:
-            wa_name = value["contacts"][0]["profile"].get("name", "")
+        contacts = value.get("contacts") or []
+        if contacts:
+            wa_name = (contacts[0].get("profile") or {}).get("name", "")
 
         if "text" not in msg:
+            # Non-text messages (image/audio/etc.) aren't handled by the bot yet.
             return "OK", 200
 
-        text = msg["text"]["body"].strip()
+        text = (msg.get("text") or {}).get("body", "").strip()
+        if not text:
+            return "OK", 200
+
         # Always persist the incoming message for the dashboard.
-        sheets.append_message(phone, "User", text)
+        try:
+            sheets.append_message(phone, "User", text)
+        except Exception:
+            log.exception("Webhook: failed to log incoming message for %s", phone)
 
         # Human override: if an admin paused AI for this lead, don't auto-reply.
         if crm.is_ai_paused(phone):
@@ -130,44 +189,89 @@ def followup():
     return f"Follow-up completed. Messages sent: {sent}"
 
 
+# Hours since lead creation at which each follow-up fires.
+_CADENCE = [
+    (24, "Followup1 Sent", "_fu_soft"),
+    (72, "Followup2 Sent", "_fu_urgency"),
+    (168, "Followup3 Sent", "_fu_final"),
+    (360, "Followup4 Sent", "_fu_reactivate"),
+]
+
+# Don't message a lead that has been in touch (either direction) more
+# recently than this — they're actively engaged, a follow-up would be noise
+# or a duplicate/interruption. Configurable via Config if present.
+_ACTIVE_CHAT_WINDOW_HOURS = getattr(Config, "FOLLOWUP_ACTIVE_CHAT_WINDOW_HOURS", 1)
+
+_SKIP_STAGES = ("Converted", "Not Interested")
+
+
 def run_followups():
-    from datetime import datetime
     try:
         rows = sheets.get_leads(use_cache=False)
     except Exception:
         log.exception("Follow-up: could not read leads")
         return 0
 
-    cadence = [
-        (24, "Followup1 Sent", _fu_soft),
-        (72, "Followup2 Sent", _fu_urgency),
-        (168, "Followup3 Sent", _fu_final),
-        (360, "Followup4 Sent", _fu_reactivate),
-    ]
+    now = now_ist()
     sent = 0
     for row in rows:
         try:
-            stage = str(row.get("Stage", "")).strip()
-            if stage in ("Converted", "Not Interested"):
+            if _should_skip_row(row, now):
                 continue
-            if str(row.get("Payment Status", "")).strip().lower() == "paid":
-                continue
-            date, time_ = row.get("Date", ""), row.get("Time", "")
-            if not date or not time_:
-                continue
-            lead_dt = datetime.strptime(f"{date} {time_}", "%d-%m-%Y %H:%M")
-            hours = (datetime.now() - lead_dt).total_seconds() / 3600
-            phone, name = row.get("Phone"), row.get("Name", "there")
 
-            for min_hours, flag, builder in cadence:
-                if hours >= min_hours and str(row.get(flag, "")).strip() != "Yes":
-                    whatsapp.send_message(phone, builder(name))
-                    sheets.update_lead(phone, {flag: "Yes"})
-                    sent += 1
-                    break
+            phone = row.get("Phone")
+            if not phone:
+                continue
+            name = row.get("Name", "there")
+
+            lead_dt = _parse_sheet_dt(row.get("Date", ""), row.get("Time", ""))
+            if lead_dt is None:
+                continue
+            hours_since_created = (now - lead_dt).total_seconds() / 3600
+
+            for min_hours, flag, builder_name in _CADENCE:
+                if hours_since_created < min_hours:
+                    continue
+                if str(row.get(flag, "")).strip() == "Yes":
+                    continue
+                builder = globals()[builder_name]
+                whatsapp.send_message(phone, builder(name))
+                sheets.update_lead(phone, {flag: "Yes"})
+                sent += 1
+                break
         except Exception:
-            log.exception("Follow-up row error")
+            log.exception("Follow-up row error for %s", row.get("Phone", "<unknown>"))
     return sent
+
+
+def _should_skip_row(row, now):
+    """True if this lead should not receive a follow-up right now."""
+    stage = str(row.get("Stage", "")).strip()
+    if stage in _SKIP_STAGES:
+        return True
+    if str(row.get("Payment Status", "")).strip().lower() == "paid":
+        return True
+
+    # Never interrupt an active conversation: if the lead has been in
+    # contact (bot or admin) within the active-chat window, skip this run —
+    # the cadence will re-check on the next /followup run.
+    last_contact = _parse_sheet_dt(*_split_last_contact(row.get("Last Contact", "")))
+    if last_contact is not None:
+        idle_hours = (now - last_contact).total_seconds() / 3600
+        if idle_hours < _ACTIVE_CHAT_WINDOW_HOURS:
+            return True
+
+    return False
+
+
+def _split_last_contact(value):
+    """'Last Contact' is stored as a single 'DD-MM-YYYY HH:MM' string;
+    split it into (date, time) parts for _parse_sheet_dt."""
+    value = str(value or "").strip()
+    if not value or " " not in value:
+        return "", ""
+    date_part, _, time_part = value.partition(" ")
+    return date_part, time_part
 
 
 def _fu_soft(name):
