@@ -22,6 +22,7 @@ Tranche-2 upgrade for multi-worker persistence.
 """
 
 from datetime import datetime
+import re
 
 from config import Config
 from logger import log, safe
@@ -62,6 +63,47 @@ _FAQ_PRIORITY = [
 
 _RESTART_WORDS = {"restart", "reset", "menu", "start over", "start again", "shuru"}
 
+# --------------------------------------------------------------------------- #
+# Phrase normalization — bridges real WhatsApp phrasing to the exact keyword
+# phrases knowledge.py's detect_intents() already looks for. knowledge.py is
+# NOT modified; this only affects which text detect_intents() sees, never
+# what's stored/displayed/logged. Each entry: if `needle` appears anywhere in
+# the message, we append the exact `keyword` phrase knowledge.py recognizes,
+# so the existing FAQ (beginner_doubt / stream_eligibility / device_requirement
+# / etc.) fires instead of the "not fully confident" fallback.
+# --------------------------------------------------------------------------- #
+_PHRASE_SYNONYMS = [
+    # "Mujhe coding nahi aati" / "coding nahi aata" -> beginner_doubt
+    ("coding nahi aati", "mujhe nahi aata"),
+    ("coding nahi aata", "mujhe nahi aata"),
+    ("nahi aati", "mujhe nahi aata"),
+    ("nahi aata hai", "mujhe nahi aata"),
+    # "Main commerce/arts/science se hu" -> stream_eligibility
+    ("commerce se hu", "commerce student"),
+    ("commerce se hoon", "commerce student"),
+    ("arts se hu", "arts student"),
+    ("arts se hoon", "arts student"),
+    ("science se hu", "science student"),
+    ("science se hoon", "science student"),
+    ("bca se hu", "any stream"),
+    ("bca se hoon", "any stream"),
+    # "Sirf mobile hai" -> device_requirement
+    ("sirf mobile", "mobile se ho jayega"),
+    ("mobile hi hai", "mobile se ho jayega"),
+    ("mobile se hoga", "mobile se ho jayega"),
+    ("only mobile", "mobile se ho jayega"),
+]
+
+
+def _normalize_for_intent(text: str) -> str:
+    """Returns a version of `text` used ONLY for detect_intents() matching.
+    The original text is still what's stored, displayed, and logged."""
+    low = (text or "").strip().lower()
+    for needle, keyword in _PHRASE_SYNONYMS:
+        if needle in low:
+            low = f"{low} {keyword}"
+    return low
+
 # Phrases that mean "tell me what's taught / included" -> grounded course details.
 _COURSE_INFO_PATTERNS = [
     "what is taught", "what will i learn", "what's included", "whats included",
@@ -73,7 +115,10 @@ _RECOMMEND_PATTERNS = [
     "recommend a course", "recommend course", "suggest a course",
     "which course is best", "best course for me", "help me choose",
     "which course should i take", "which course should i join",
-    "which one should i pick",
+    "which one should i pick", "konsa course", "kaunsa course",
+    "kaun sa course", "mere liye konsa course", "mere liye best",
+    "which course should i choose", "which course should i pick",
+    "suggest me a course", "suggest course",
 ]
 
 _COURSE_NAME_TO_KEY = {c["name"]: key for key, c in COURSES.items()}
@@ -472,7 +517,7 @@ def _dispatch(phone, sess, text, wa_name):
         _send(phone, _sessions[phone], _welcome(_sessions[phone]))
         return
 
-    intents = detect_intents(text)
+    intents = detect_intents(_normalize_for_intent(text))
     gained = score_for(intents)
     if gained:
         sess["score"] += gained
