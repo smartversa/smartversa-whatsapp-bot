@@ -44,39 +44,52 @@
     a{ color:inherit; }
     h1,h2,h3,.brand,.title,.name{ font-family:'Lexend', 'Inter', sans-serif; }
     .mono{ font-family:'JetBrains Mono', monospace; }
+    button{ font-family:inherit; }
 
     /* ===== Shell ===== */
     .shell{ display:flex; min-height:100vh; }
 
     /* ===== Sidebar ===== */
     .sidebar{
-      width:74px; flex-shrink:0; background:var(--surface);
+      width:196px; flex-shrink:0; background:var(--surface);
       border-right:1px solid var(--border-soft);
-      display:flex; flex-direction:column; align-items:center;
-      padding:18px 0; gap:6px; position:sticky; top:0; height:100vh;
+      display:flex; flex-direction:column;
+      padding:18px 12px; gap:3px; position:sticky; top:0; height:100vh;
     }
+    .sidebar .logo-row{ display:flex; align-items:center; gap:10px; padding:0 6px 20px; }
     .sidebar .logo{
-      width:38px; height:38px; border-radius:11px;
+      width:36px; height:36px; border-radius:11px; flex-shrink:0;
       background:linear-gradient(145deg,var(--brand),var(--brand-dim));
       display:flex; align-items:center; justify-content:center;
-      font-weight:800; font-size:15px; color:#06120D; margin-bottom:22px;
+      font-weight:800; font-size:14px; color:#06120D;
       box-shadow:0 4px 14px var(--brand-glow);
     }
+    .sidebar .logo-row .lname{ font-weight:700; font-size:14.5px; }
+    .sidebar .logo-row .lsub{ font-size:10.5px; color:var(--text-faint); margin-top:1px; }
     .sidebar .nav-item{
-      width:44px; height:44px; border-radius:var(--radius-sm);
-      display:flex; align-items:center; justify-content:center;
-      color:var(--text-dim); text-decoration:none; font-size:18px;
+      height:40px; border-radius:var(--radius-sm); padding:0 12px;
+      display:flex; align-items:center; gap:11px;
+      color:var(--text-dim); text-decoration:none; font-size:13.5px; font-weight:500;
       transition:background .15s, color .15s;
     }
+    .sidebar .nav-item .ic{ font-size:16px; width:18px; text-align:center; flex-shrink:0; }
     .sidebar .nav-item:hover{ background:var(--surface-2); color:var(--text); }
-    .sidebar .nav-item.active{ background:var(--brand-glow); color:var(--brand); }
+    .sidebar .nav-item.active{ background:var(--brand-glow); color:var(--brand); font-weight:700; }
     .sidebar .spacer{ flex:1; }
+    .sidebar .nav-divider{ height:1px; background:var(--border-soft); margin:8px 6px; }
+    .sidebar .avatar-row{
+      display:flex; align-items:center; gap:9px; padding:8px 6px; margin-top:4px;
+      border-top:1px solid var(--border-soft); padding-top:14px;
+    }
     .sidebar .avatar{
-      width:36px; height:36px; border-radius:50%;
+      width:32px; height:32px; border-radius:50%; flex-shrink:0;
       background:var(--surface-3); border:1px solid var(--border);
       display:flex; align-items:center; justify-content:center;
-      font-size:13px; font-weight:700; color:var(--text-dim); margin-bottom:8px;
+      font-size:12.5px; font-weight:700; color:var(--text-dim);
     }
+    .sidebar .avatar-row .uname{ font-size:12.5px; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .sidebar .avatar-row a{ color:var(--text-faint); text-decoration:none; font-size:11px; }
+    .sidebar .avatar-row a:hover{ color:var(--coral); }
 
     /* ===== Main column ===== */
     .main{ flex:1; min-width:0; display:flex; flex-direction:column; }
@@ -85,11 +98,24 @@
       display:flex; align-items:center; gap:14px;
       padding:16px 26px; border-bottom:1px solid var(--border-soft);
       background:linear-gradient(180deg, var(--surface) 0%, var(--bg) 140%);
+      flex-wrap:wrap;
     }
     .topbar .brand{ font-weight:700; font-size:17px; letter-spacing:.01em; }
     .topbar .brand span{ color:var(--brand); }
     .topbar .subtitle{ font-size:12px; color:var(--text-faint); margin-top:1px; }
     .topbar .spacer{ flex:1; }
+    .gsearch{ display:flex; align-items:center; }
+    .gsearch input{
+      background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+      padding:9px 13px; border-radius:20px 0 0 20px; font-size:13px; font-family:inherit;
+      outline:none; width:230px; transition:border-color .15s;
+    }
+    .gsearch input:focus{ border-color:var(--brand-dim); }
+    .gsearch button{
+      padding:9px 14px; border:1px solid var(--border); border-left:none; background:var(--surface-3);
+      color:var(--text-dim); border-radius:0 20px 20px 0; cursor:pointer; font-size:13px;
+    }
+    .gsearch button:hover{ color:var(--text); }
     .topbar .user-chip{
       font-size:12.5px; color:var(--text-dim); background:var(--surface-2);
       border:1px solid var(--border); padding:6px 12px; border-radius:20px;
@@ -108,6 +134,7 @@
       display:grid; grid-template-columns:repeat(7,1fr); gap:12px;
       padding:18px 26px; background:var(--bg);
     }
+    .cards.compact{ grid-template-columns:repeat(4,1fr); }
     .card{
       background:var(--surface); border:1px solid var(--border-soft);
       border-radius:var(--radius-md); padding:15px 16px;
@@ -127,10 +154,40 @@
     .card.c-rev{ --accent:#4FC3E8; }
     .card.c-conv{ --accent:#C084F5; }
 
-    /* ===== Layout: three columns ===== */
+    /* ===== Generic page padding for non-3-column tabs ===== */
+    .page{ padding:22px 26px 40px; flex:1; overflow-y:auto; }
+    .page-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; flex-wrap:wrap; }
+    .page-head h2{ font-size:19px; margin:0; }
+    .page-head .sub{ font-size:12.5px; color:var(--text-faint); margin-top:3px; }
+
+    .btn{
+      padding:9px 16px; border:none; background:var(--brand); color:#06120D;
+      border-radius:var(--radius-sm); cursor:pointer; font-weight:700; font-size:13px;
+      transition:filter .15s; font-family:inherit;
+    }
+    .btn:hover{ filter:brightness(1.08); }
+    .btn:disabled{ opacity:.6; cursor:default; filter:none; }
+    .btn.ghost{ background:var(--surface-2); color:var(--text); border:1px solid var(--border); }
+    .btn.ghost:hover{ border-color:var(--brand-dim); }
+    .btn.warn{ background:rgba(240,104,91,.14); color:var(--coral); border:1px solid rgba(240,104,91,.3); }
+    .btn.warn:hover{ background:rgba(240,104,91,.22); }
+    .btn.sm{ padding:6px 11px; font-size:12px; }
+
+    input[type=text], input[type=tel], input[type=search], select, textarea{
+      background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+      padding:9px 11px; border-radius:var(--radius-sm); font-size:13px; font-family:inherit;
+      outline:none; transition:border-color .15s;
+    }
+    input::placeholder, textarea::placeholder{ color:var(--text-faint); }
+    input:focus, select:focus, textarea:focus{ border-color:var(--brand-dim); }
+    label.f-label{ font-size:11.5px; color:var(--text-faint); font-weight:600; text-transform:uppercase; letter-spacing:.05em; display:block; margin-bottom:6px; }
+
+    .empty{ color:var(--text-faint); padding:32px 20px; text-align:center; font-size:13.5px; }
+    .empty .big{ font-size:26px; display:block; margin-bottom:8px; }
+
+    /* ===== Layout: three columns (Leads / Messages tabs) ===== */
     .layout{ display:flex; flex:1; min-height:0; border-top:1px solid var(--border-soft); }
 
-    /* -- Lead list -- */
     .left{
       width:320px; flex-shrink:0; background:var(--surface);
       border-right:1px solid var(--border-soft); display:flex; flex-direction:column;
@@ -141,14 +198,9 @@
       position:sticky; top:0; z-index:2;
     }
     .filters form{ display:flex; gap:8px; flex-wrap:wrap; }
-    .filters input, .filters select{
-      background:var(--surface-2); border:1px solid var(--border); color:var(--text);
-      padding:9px 11px; border-radius:var(--radius-sm); font-size:13px; font-family:inherit;
-      outline:none; transition:border-color .15s;
-    }
-    .filters input::placeholder{ color:var(--text-faint); }
-    .filters input:focus, .filters select:focus{ border-color:var(--brand-dim); }
-    .filters input[name=search]{ flex:1 1 100%; min-width:120px; }
+    .filters input, .filters select{ font-size:13px; }
+    .filters input[name=search], .filters input[name=msearch]{ flex:1 1 100%; min-width:120px; }
+    .filters input[name=mdate]{ flex:1; }
     .filters select{ flex:1; }
     .filters button{
       padding:9px 16px; border:none; background:var(--brand); color:#06120D;
@@ -183,10 +235,19 @@
       color:var(--text-dim); font-weight:600;
     }
     .badge{
-      display:none; background:var(--wa-green); color:#06120D; font-size:10px;
+      display:inline-block; background:var(--wa-green); color:#06120D; font-size:10px;
       font-weight:700; border-radius:8px; padding:1px 7px; margin-left:6px;
     }
-    .empty{ color:var(--text-faint); padding:32px 20px; text-align:center; font-size:13.5px; }
+    .badge.hot{ background:var(--coral); color:#1A0704; }
+    .unread-dot{
+      width:8px; height:8px; border-radius:50%; background:var(--wa-green);
+      flex-shrink:0; box-shadow:0 0 0 2px var(--surface);
+    }
+    .pay-chip{
+      font-size:10.5px; padding:1px 8px; border-radius:8px; font-weight:600;
+      background:rgba(43,212,166,.15); color:var(--brand);
+    }
+    .pay-chip.unpaid{ background:var(--surface-3); color:var(--text-dim); }
 
     /* -- Center: chat -- */
     .center{ flex:1; min-width:0; display:flex; flex-direction:column; background:var(--bg); }
@@ -227,11 +288,18 @@
     }
     .bubble.user{ justify-content:flex-start; }
     .bubble.user .msg{ background:var(--surface-2); border:1px solid var(--border-soft); border-bottom-left-radius:4px; }
-    .bubble.bot{ justify-content:flex-start; }
-    .bubble.bot .msg{ background:var(--surface); border:1px solid var(--border); border-bottom-left-radius:4px; }
+    .bubble.bot{ justify-content:flex-end; }
+    .bubble.bot .msg{ background:var(--surface-3); border:1px solid var(--border); border-bottom-right-radius:4px; }
     .bubble.admin{ justify-content:flex-end; }
     .bubble.admin .msg{ background:var(--wa-bubble); border:1px solid rgba(43,212,166,.25); border-bottom-right-radius:4px; }
-    .bubble .t{ display:block; font-size:10px; color:var(--text-faint); margin-top:5px; letter-spacing:.02em; }
+    .bubble .t{
+      display:flex; gap:6px; align-items:center; font-size:10px; color:var(--text-faint);
+      margin-top:5px; letter-spacing:.02em;
+    }
+    .bubble .t .who{ font-weight:700; text-transform:uppercase; letter-spacing:.05em; font-size:9px; }
+    .bubble.bot .t .who{ color:var(--text-dim); }
+    .bubble.admin .t .who{ color:var(--brand); }
+    .bubble.user .t .who{ display:none; }
 
     .quick{
       padding:10px 20px; background:var(--surface); border-top:1px solid var(--border-soft);
@@ -243,21 +311,35 @@
     }
     .quick button:hover{ border-color:var(--brand-dim); color:var(--text); }
 
+    /* ===== Lead Quick Actions (Feature 5) ===== */
+    .quick-actions-bar{
+      padding:10px 20px; background:var(--surface); border-top:1px solid var(--border-soft);
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .qa-btn{
+      font-size:12px; font-weight:600; padding:7px 13px; border:1px solid var(--border);
+      background:var(--surface-2); color:var(--text-dim); border-radius:16px; cursor:pointer;
+      transition:all .15s; font-family:inherit; text-decoration:none; display:inline-flex;
+      align-items:center; gap:5px;
+    }
+    .qa-btn:hover{ border-color:var(--brand-dim); color:var(--text); }
+    .qa-btn.paid{ background:rgba(43,212,166,.12); color:var(--brand); border-color:rgba(43,212,166,.3); }
+    .qa-btn.paid:hover{ background:rgba(43,212,166,.2); }
+    .qa-btn.danger{ background:rgba(240,104,91,.1); color:var(--coral); border-color:rgba(240,104,91,.28); }
+    .qa-btn.danger:hover{ background:rgba(240,104,91,.2); }
+
     .sendbox{ background:var(--surface); padding:14px 20px 18px; border-top:1px solid var(--border-soft); }
     .sendbox textarea{
-      width:100%; height:56px; background:var(--surface-2); border:1px solid var(--border);
-      color:var(--text); border-radius:var(--radius-md); padding:11px 13px; resize:vertical;
-      font-family:inherit; font-size:14px; outline:none; transition:border-color .15s;
+      width:100%; height:56px; resize:vertical; padding:11px 13px; font-size:14px;
     }
-    .sendbox textarea:focus{ border-color:var(--brand-dim); }
-    .sendbox textarea::placeholder{ color:var(--text-faint); }
     .sendbox .actions{ margin-top:9px; text-align:right; }
     .sendbox button{
       padding:10px 26px; border:none; background:var(--wa-green); color:#06120D;
       border-radius:var(--radius-sm); cursor:pointer; font-weight:700; font-size:13.5px;
-      transition:filter .15s;
+      transition:filter .15s; font-family:inherit;
     }
     .sendbox button:hover{ filter:brightness(1.08); }
+    .sendbox button:disabled{ opacity:.65; cursor:default; }
 
     .center .empty{ margin:auto; font-size:14px; }
 
@@ -300,39 +382,390 @@
       font-weight:700; margin:0 0 10px;
     }
 
+    /* ===== Conversation list (Messages Center) ===== */
+    .conv{
+      display:block; padding:13px 14px; border-bottom:1px solid var(--border-soft);
+      text-decoration:none; color:var(--text); position:relative; transition:background .12s;
+    }
+    .conv:hover{ background:var(--surface-2); }
+    .conv.active{ background:var(--brand-glow); }
+    .conv.active::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--brand); }
+    .conv .row1{ display:flex; justify-content:space-between; gap:8px; align-items:center; }
+    .conv .name{ font-weight:600; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .conv .time{ font-size:11px; color:var(--text-faint); flex-shrink:0; }
+    .conv .preview{
+      font-size:12.5px; color:var(--text-faint); margin-top:4px;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; gap:5px; align-items:center;
+    }
+    .sender-tag{
+      font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+      padding:1px 6px; border-radius:6px; flex-shrink:0;
+    }
+    .sender-tag.User{ background:var(--surface-3); color:var(--text-dim); }
+    .sender-tag.Bot{ background:rgba(124,147,240,.16); color:var(--indigo); }
+    .sender-tag.Admin{ background:rgba(43,212,166,.16); color:var(--brand); }
+    .not-a-lead{ font-size:10px; color:var(--text-faint); font-style:italic; }
+
+    /* ===== AI Training panel ===== */
+    .training-grid{ display:grid; grid-template-columns:340px 1fr; gap:20px; align-items:start; }
+    .faq-form{
+      background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+      padding:18px; position:sticky; top:22px;
+    }
+    .faq-form h3{ margin:0 0 4px; font-size:15px; }
+    .faq-form .hint{ font-size:11.5px; color:var(--text-faint); margin-bottom:14px; }
+    .faq-form .field{ margin-bottom:12px; }
+    .faq-form input, .faq-form select, .faq-form textarea{ width:100%; }
+    .faq-form textarea{ min-height:80px; resize:vertical; }
+    .faq-form .row2{ display:flex; gap:10px; }
+    .faq-form .row2 > div{ flex:1; }
+    .faq-form .form-actions{ display:flex; gap:8px; margin-top:6px; }
+
+    .faq-toolbar{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+    .faq-toolbar input[name=fsearch]{ flex:1; min-width:160px; }
+    .faq-list{ display:flex; flex-direction:column; gap:10px; }
+    .faq-card{
+      background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+      padding:15px 17px;
+    }
+    .faq-card .fq-head{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .faq-card .fq-q{ font-weight:700; font-size:14px; }
+    .faq-card .fq-a{ font-size:13px; color:var(--text-dim); margin-top:6px; line-height:1.5; white-space:pre-wrap; }
+    .faq-card .fq-meta{ display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+    .chip{
+      font-size:10.5px; padding:2px 9px; border-radius:8px; background:var(--surface-3);
+      color:var(--text-dim); font-weight:600;
+    }
+    .chip.lang{ background:rgba(124,147,240,.14); color:var(--indigo); }
+    .chip.cat{ background:rgba(232,170,76,.14); color:var(--gold); }
+    .status-pill{ font-size:10.5px; padding:2px 10px; border-radius:9px; font-weight:700; flex-shrink:0; }
+    .status-pill.Active{ background:rgba(43,212,166,.15); color:var(--brand); }
+    .status-pill.Inactive{ background:rgba(240,104,91,.15); color:var(--coral); }
+    .faq-card .fq-actions{ display:flex; gap:6px; margin-top:12px; flex-wrap:wrap; }
+    .faq-card .fq-actions form{ display:inline; }
+
+    /* ===== New Message ===== */
+    .newmsg-card{
+      max-width:520px; background:var(--surface); border:1px solid var(--border-soft);
+      border-radius:var(--radius-md); padding:24px;
+    }
+    .newmsg-card .field{ margin-bottom:14px; }
+    .newmsg-card input, .newmsg-card textarea{ width:100%; }
+    .newmsg-card textarea{ min-height:110px; resize:vertical; }
+
+    /* ===== Analytics extra ===== */
+    .analytics-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:22px; }
+    .panel-card{
+      background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-md); padding:18px;
+    }
+    .panel-card h3{ margin:0 0 14px; font-size:14px; }
+    .bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:12.5px; }
+    .bar-row .lbl{ width:110px; flex-shrink:0; color:var(--text-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .bar-row .track{ flex:1; height:8px; background:var(--surface-3); border-radius:6px; overflow:hidden; }
+    .bar-row .fill{ height:100%; background:linear-gradient(90deg,var(--brand-dim),var(--brand)); border-radius:6px; }
+    .bar-row .val{ width:28px; text-align:right; flex-shrink:0; color:var(--text-faint); font-family:'JetBrains Mono',monospace; }
+
+    /* ===== Settings placeholder ===== */
+    .settings-list{ display:flex; flex-direction:column; gap:10px; max-width:560px; }
+    .settings-row{
+      display:flex; justify-content:space-between; align-items:center; gap:12px;
+      background:var(--surface); border:1px solid var(--border-soft); border-radius:var(--radius-md);
+      padding:14px 16px; font-size:13px;
+    }
+    .settings-row .k{ font-weight:600; }
+    .settings-row .v{ color:var(--text-faint); font-size:12px; }
+
+    /* ===== Toasts ===== */
+    #toastWrap{ position:fixed; top:18px; right:18px; z-index:999; display:flex; flex-direction:column; gap:10px; }
+    .toast{
+      min-width:240px; max-width:360px; padding:12px 16px; border-radius:var(--radius-sm);
+      background:var(--surface-3); border:1px solid var(--border); box-shadow:var(--shadow);
+      font-size:13px; display:flex; align-items:center; gap:10px; animation:toastIn .2s ease-out;
+    }
+    .toast.success{ border-color:rgba(43,212,166,.4); }
+    .toast.success .dot{ background:var(--brand); }
+    .toast.error{ border-color:rgba(240,104,91,.4); }
+    .toast.error .dot{ background:var(--coral); }
+    .toast .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    @keyframes toastIn{ from{ opacity:0; transform:translateY(-8px); } to{ opacity:1; transform:translateY(0); } }
+
+    /* ===== Google Sheets Manager (Phase 6) ===== */
+    .sheets-toolbar{
+      display:flex; align-items:center; gap:10px; padding:14px 26px; flex-wrap:wrap;
+      border-bottom:1px solid var(--border-soft); background:var(--surface);
+    }
+    .sheets-toolbar select, .sheets-toolbar input[type=text]{
+      background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+      padding:8px 12px; border-radius:var(--radius-sm); font-size:13px; font-family:inherit; outline:none;
+    }
+    .sheets-toolbar select:focus, .sheets-toolbar input:focus{ border-color:var(--brand-dim); }
+    .sheets-toolbar .sheet-picker{ min-width:170px; font-weight:600; }
+    .sheets-toolbar .sh-search{ width:220px; }
+    .sheets-toolbar .spacer{ flex:1; }
+    .sheets-toolbar .sh-btn{
+      font-size:12.5px; font-weight:600; padding:8px 14px; border:1px solid var(--border);
+      background:var(--surface-2); color:var(--text-dim); border-radius:var(--radius-sm); cursor:pointer;
+      transition:all .15s; font-family:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+    }
+    .sheets-toolbar .sh-btn:hover{ border-color:var(--brand-dim); color:var(--text); }
+    .sheets-toolbar .sh-btn.primary{ background:var(--brand); color:#06120D; border-color:var(--brand); }
+    .sheets-toolbar .sh-btn.primary:hover{ filter:brightness(1.08); }
+    .sheets-meta{ padding:6px 26px; font-size:11.5px; color:var(--text-faint); display:flex; gap:14px; align-items:center; }
+    .sheets-meta .live-dot{ width:7px; height:7px; border-radius:50%; background:var(--brand); display:inline-block; box-shadow:0 0 0 3px var(--brand-glow); }
+
+    .grid-wrap{ flex:1; overflow:auto; padding:0 26px 20px; min-height:0; }
+    table.sheet-grid{ border-collapse:separate; border-spacing:0; width:100%; font-size:12.5px; background:var(--surface); border-radius:var(--radius-md); overflow:hidden; }
+    table.sheet-grid thead th{
+      position:sticky; top:0; z-index:2; background:var(--surface-3); color:var(--text-dim);
+      text-align:left; font-weight:700; padding:10px 12px; border-bottom:1px solid var(--border);
+      white-space:nowrap; cursor:pointer; user-select:none; resize:horizontal; overflow:hidden; min-width:90px; max-width:480px;
+    }
+    table.sheet-grid thead th:hover{ color:var(--text); }
+    table.sheet-grid thead th .sort-ind{ color:var(--brand); margin-left:4px; }
+    table.sheet-grid thead th.qa-col{ resize:none; min-width:150px; }
+    table.sheet-grid tbody td{
+      padding:8px 12px; border-bottom:1px solid var(--border-soft); color:var(--text); white-space:nowrap;
+      overflow:hidden; text-overflow:ellipsis; max-width:320px;
+    }
+    table.sheet-grid tbody tr:hover td{ background:var(--surface-2); }
+    table.sheet-grid tbody td.editable{ cursor:text; }
+    table.sheet-grid tbody td.editable:hover{ box-shadow:inset 0 0 0 1px var(--brand-dim); }
+    table.sheet-grid tbody td.editing{ padding:3px 6px; }
+    table.sheet-grid tbody td.editing input{
+      width:100%; background:var(--bg); border:1px solid var(--brand); color:var(--text);
+      padding:6px 8px; border-radius:6px; font-size:12.5px; font-family:inherit; outline:none;
+    }
+    table.sheet-grid tbody td.saving{ opacity:.55; }
+    table.sheet-grid tbody td.row-actions{ white-space:nowrap; }
+    .row-act-btn{
+      border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); border-radius:6px;
+      padding:4px 8px; font-size:11px; cursor:pointer; margin-right:4px; font-family:inherit;
+    }
+    .row-act-btn:hover{ border-color:var(--brand-dim); color:var(--text); }
+    .row-act-btn.del{ color:var(--coral); }
+    .row-act-btn.del:hover{ border-color:var(--coral); }
+    .row-act-btn.wa{ color:var(--wa-green); }
+
+    .sheets-pager{
+      display:flex; align-items:center; gap:10px; padding:12px 26px; border-top:1px solid var(--border-soft);
+      font-size:12.5px; color:var(--text-dim);
+    }
+    .sheets-pager button{
+      border:1px solid var(--border); background:var(--surface-2); color:var(--text-dim); border-radius:6px;
+      padding:6px 12px; cursor:pointer; font-family:inherit; font-size:12.5px;
+    }
+    .sheets-pager button:hover:not(:disabled){ border-color:var(--brand-dim); color:var(--text); }
+    .sheets-pager button:disabled{ opacity:.4; cursor:default; }
+
+    .sheets-shell{ display:flex; flex-direction:column; flex:1; min-height:0; }
+    .sheet-empty, .sheet-loading{ padding:60px 26px; text-align:center; color:var(--text-faint); font-size:13px; }
+    .sheet-loading .spin{
+      width:22px; height:22px; border-radius:50%; border:2.5px solid var(--surface-3); border-top-color:var(--brand);
+      animation:spin .7s linear infinite; margin:0 auto 10px;
+    }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
+
+    .add-row-form{
+      display:flex; flex-wrap:wrap; gap:8px; padding:14px 26px; background:var(--surface); border-top:1px solid var(--border-soft);
+    }
+    .add-row-form input{
+      background:var(--surface-2); border:1px solid var(--border); color:var(--text);
+      padding:7px 10px; border-radius:6px; font-size:12px; font-family:inherit; outline:none; width:140px;
+    }
+
+    /* Simple modal used for the import panel */
+    .modal-backdrop{ position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:998; display:none; align-items:center; justify-content:center; }
+    .modal-backdrop.open{ display:flex; }
+    .modal-card{ background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:22px; width:380px; box-shadow:var(--shadow); }
+    .modal-card h3{ margin:0 0 6px; font-size:15px; }
+    .modal-card p{ margin:0 0 14px; font-size:12.5px; color:var(--text-faint); }
+    .modal-card input[type=file]{ width:100%; margin-bottom:14px; font-size:12.5px; }
+    .modal-actions{ display:flex; justify-content:flex-end; gap:8px; }
+
     /* ===== Responsive ===== */
     @media (max-width:1280px){
       .cards{ grid-template-columns:repeat(4,1fr); }
       .right{ width:260px; }
+      .training-grid{ grid-template-columns:300px 1fr; }
     }
     @media (max-width:1100px){
       .right{ display:none; }
+      .training-grid{ grid-template-columns:1fr; }
+      .faq-form{ position:static; }
+      .analytics-grid{ grid-template-columns:1fr; }
     }
     @media (max-width:860px){
-      .sidebar{ display:none; }
+      .sidebar{ width:64px; padding:14px 8px; }
+      .sidebar .logo-row .lname, .sidebar .logo-row .lsub{ display:none; }
+      .sidebar .nav-item span.lbl{ display:none; }
+      .sidebar .nav-item{ justify-content:center; padding:0; }
+      .sidebar .avatar-row .uname, .sidebar .avatar-row a{ display:none; }
       .cards{ grid-template-columns:repeat(3,1fr); padding:14px; }
       .layout{ flex-direction:column; }
       .left{ width:100%; border-right:none; border-bottom:1px solid var(--border-soft); max-height:280px; }
       .center{ min-height:60vh; }
+      .gsearch input{ width:140px; }
     }
     @media (max-width:560px){
       .cards{ grid-template-columns:repeat(2,1fr); }
       .topbar{ padding:12px 16px; }
       .topbar .subtitle{ display:none; }
       .bubble .msg{ max-width:84%; }
+      .gsearch{ display:none; }
     }
   </style>
 </head>
 <body>
+  {% macro chat_panel(tab_name) %}
+  <div class="center">
+    {% if selected %}
+      <div class="chat-head">
+        <div>
+          <div class="title">{{ (lead['Name'] if lead else '') or selected }}</div>
+          <div class="sub">{{ selected }}
+            {% if lead %}· score {{ lead['Lead Score'] }} · {{ lead['Priority'] or '—' }} priority{% endif %}</div>
+        </div>
+        <div class="spacer"></div>
+        {% if lead %}
+        <div class="panel">
+          <form method="POST" action="/lead_action">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="phone" value="{{ selected }}">
+            <input type="hidden" name="action" value="set_stage">
+            <select name="stage" onchange="this.form.submit()">
+              {% for s in stages %}
+                <option value="{{ s }}" {% if lead and s == lead['Stage'] %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </form>
+          {% if lead and (lead['AI Paused']|string|lower == 'yes') %}
+            <form method="POST" action="/lead_action">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="phone" value="{{ selected }}">
+              <input type="hidden" name="action" value="resume_ai">
+              <button class="ok" type="submit">▶ Resume AI</button>
+            </form>
+          {% else %}
+            <form method="POST" action="/lead_action">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="phone" value="{{ selected }}">
+              <input type="hidden" name="action" value="pause_ai">
+              <button class="warn" type="submit">⏸ Take over (pause AI)</button>
+            </form>
+          {% endif %}
+          <form method="POST" action="/lead_action">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="phone" value="{{ selected }}">
+            <input type="hidden" name="action" value="add_note">
+            <input type="text" name="note" placeholder="Add note…">
+            <button type="submit">Save</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if lead %}
+      <!-- Lead Quick Actions (Feature 5) -->
+      <div class="quick-actions-bar">
+        <a class="qa-btn" href="https://wa.me/{{ selected|replace('+','') }}" target="_blank" rel="noopener" title="Open in WhatsApp">💬 WhatsApp</a>
+        <a class="qa-btn" href="tel:{{ selected }}" title="Call">📞 Call</a>
+        <button type="button" class="qa-btn" onclick="copyPhone('{{ selected }}')" title="Copy number">📋 Copy</button>
+        <form method="POST" action="/lead_action" style="display:contents;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="phone" value="{{ selected }}">
+          <input type="hidden" name="action" value="mark_paid">
+          <button type="submit" class="qa-btn paid" title="Mark this lead as Paid">✅ Mark Paid</button>
+        </form>
+        <form method="POST" action="/lead_action" style="display:contents;" onsubmit="return confirm('Delete this lead permanently? This cannot be undone. (Conversation history is kept.)');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="phone" value="{{ selected }}">
+          <input type="hidden" name="action" value="delete_lead">
+          <button type="submit" class="qa-btn danger" title="Delete lead">🗑 Delete Lead</button>
+        </form>
+      </div>
+      {% endif %}
+
+      <div class="chat" id="chatBox">
+        {% for m in chat %}
+          {% set snd = m['Sender']|string %}
+          <div class="bubble {{ 'admin' if snd == 'Admin' else ('user' if snd == 'User' else 'bot') }}">
+            <div class="msg" title="{{ m['Date'] }} {{ m['Time'] }}">{{ m['Message'] }}
+              <span class="t"><span class="who">{{ snd }}</span><span>{{ m['Time'] }}</span></span>
+            </div>
+          </div>
+        {% endfor %}
+        {% if not chat %}<div class="empty">No messages yet — this conversation will appear here once the lead writes in.</div>{% endif %}
+      </div>
+
+      <div class="quick">
+        <button type="button" onclick="insert('Here is your enrolment link: ' + PAYMENT)">💳 Payment Link</button>
+        <button type="button" onclick="insert('Here are the full course details 👇')">📘 Course Details</button>
+        <button type="button" onclick="insert('Can we schedule a quick call? What time suits you today?')">📞 Schedule Call</button>
+        <button type="button" onclick="insert('Just following up 😊 Did you get a chance to look at the program?')">🔔 Follow-up</button>
+      </div>
+
+      <div class="sendbox">
+        <form method="POST" action="/send_manual" id="sendForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+          <input type="hidden" name="phone" value="{{ selected }}">
+          <input type="hidden" name="tab" value="{{ tab_name }}">
+          <textarea name="msg" id="msgBox" placeholder="Type a message…" required></textarea>
+          <div class="actions"><button type="submit">Send</button></div>
+        </form>
+      </div>
+    {% else %}
+      <div class="empty">💬 Select a conversation on the left to view the messages.</div>
+    {% endif %}
+  </div>
+  {% endmacro %}
+
+  <div id="toastWrap"></div>
+
+
   <div class="shell">
     <!-- Sidebar -->
     <div class="sidebar">
-      <div class="logo">SV</div>
-      <a class="nav-item active" title="Dashboard" href="/dashboard">⌂</a>
-      <a class="nav-item" title="Export" href="/export">⬇</a>
+      <div class="logo-row">
+        <div class="logo">SV</div>
+        <div>
+          <div class="lname">SmartVersa</div>
+          <div class="lsub">Admin Panel</div>
+        </div>
+      </div>
+
+      <a class="nav-item {{ 'active' if active_tab == 'overview' else '' }}" href="/dashboard?tab=overview">
+        <span class="ic">⌂</span><span class="lbl">Dashboard</span>
+      </a>
+      <a class="nav-item {{ 'active' if active_tab == 'leads' else '' }}" href="/dashboard?tab=leads">
+        <span class="ic">👤</span><span class="lbl">Leads</span>
+      </a>
+      <a class="nav-item {{ 'active' if active_tab == 'messages' else '' }}" href="/dashboard?tab=messages">
+        <span class="ic">💬</span><span class="lbl">Messages</span>
+      </a>
+      <a class="nav-item {{ 'active' if active_tab == 'training' else '' }}" href="/dashboard?tab=training">
+        <span class="ic">🧠</span><span class="lbl">AI Training</span>
+      </a>
+      <a class="nav-item {{ 'active' if active_tab == 'newmsg' else '' }}" href="/dashboard?tab=newmsg">
+        <span class="ic">✉</span><span class="lbl">New Message</span>
+      </a>
+      <a class="nav-item {{ 'active' if active_tab == 'sheets' else '' }}" href="/dashboard?tab=sheets">
+        <span class="ic">🗂</span><span class="lbl">Google Sheets</span>
+      </a>
+      <a class="nav-item {{ 'active' if active_tab == 'analytics' else '' }}" href="/dashboard?tab=analytics">
+        <span class="ic">📊</span><span class="lbl">Analytics</span>
+      </a>
+      <a class="nav-item {{ 'active' if active_tab == 'settings' else '' }}" href="/dashboard?tab=settings">
+        <span class="ic">⚙</span><span class="lbl">Settings</span>
+      </a>
+
       <div class="spacer"></div>
-      <div class="avatar">{{ user[:1]|upper if user else '?' }}</div>
-      <a class="nav-item" title="Logout" href="/logout">⏻</a>
+      <div class="avatar-row">
+        <div class="avatar">{{ user[:1]|upper if user else '?' }}</div>
+        <div style="flex:1; min-width:0;">
+          <div class="uname">{{ user }}</div>
+          <a href="/logout">Logout ⏻</a>
+        </div>
+      </div>
     </div>
 
     <div class="main">
@@ -343,12 +776,17 @@
           <div class="subtitle">AI admission counsellor · WhatsApp desk</div>
         </div>
         <div class="spacer"></div>
-        <div class="user-chip">👤 {{ user }}</div>
+        <form class="gsearch" method="GET" action="/dashboard">
+          <input type="hidden" name="tab" value="leads">
+          <input type="text" name="search" placeholder="Search leads, phone, email, messages, tags…" value="{{ search }}">
+          <button type="submit" title="Search everywhere">🔍</button>
+        </form>
         <a class="action" href="/export">⬇ Export CSV</a>
         <a class="action logout" href="/logout">Logout</a>
       </div>
 
-      <!-- Analytics -->
+      {% if active_tab == 'overview' %}
+      <!-- ============================= OVERVIEW ============================= -->
       <div class="cards">
         <div class="card c-total"><div class="n">{{ stats.total }}</div><div class="l">Total Leads</div></div>
         <div class="card c-today"><div class="n">{{ stats.today }}</div><div class="l">New Today</div></div>
@@ -359,12 +797,52 @@
         <div class="card c-conv"><div class="n">{{ stats.conversion_rate }}%</div><div class="l">Conversion</div></div>
       </div>
 
-      <!-- Layout -->
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h2>Welcome back{{ ', ' + user if user else '' }} 👋</h2>
+            <div class="sub">Here's what's happening across SmartVersa right now.</div>
+          </div>
+        </div>
+
+        <div class="section-label">Recent Leads</div>
+        {% if leads %}
+          <div class="faq-list">
+            {% for l in leads[:8] %}
+              <a class="faq-card" style="text-decoration:none; display:block;" href="/dashboard?tab=leads&phone={{ l['Phone'] }}">
+                <div class="fq-head">
+                  <div>
+                    <div class="fq-q">{{ l['Name'] or l['WhatsApp Name'] or l['Phone'] }}</div>
+                    <div style="font-size:12px; color:var(--text-faint); margin-top:2px;">{{ l['Phone'] }} · {{ l['Course Interest'] or 'No course selected' }}</div>
+                  </div>
+                  <span class="stage-pill">{{ l['Stage'] or 'New Lead' }}</span>
+                </div>
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty"><span class="big">🌱</span>No leads yet — once students message in on WhatsApp, they'll show up here.</div>
+        {% endif %}
+      </div>
+
+      {% elif active_tab == 'leads' %}
+      <!-- ============================= LEADS ============================= -->
+      <div class="cards">
+        <div class="card c-total"><div class="n">{{ stats.total }}</div><div class="l">Total Leads</div></div>
+        <div class="card c-today"><div class="n">{{ stats.today }}</div><div class="l">New Today</div></div>
+        <div class="card c-warm"><div class="n">{{ stats.warm }}</div><div class="l">Warm Leads</div></div>
+        <div class="card c-hot"><div class="n">{{ stats.hot }}</div><div class="l">Hot Leads</div></div>
+        <div class="card c-sales"><div class="n">{{ stats.sales }}</div><div class="l">Converted</div></div>
+        <div class="card c-rev"><div class="n">₹{{ stats.revenue }}</div><div class="l">Revenue</div></div>
+        <div class="card c-conv"><div class="n">{{ stats.conversion_rate }}%</div><div class="l">Conversion</div></div>
+      </div>
+
       <div class="layout">
         <!-- Lead list -->
         <div class="left">
           <div class="filters">
             <form method="GET" action="/dashboard">
+              <input type="hidden" name="tab" value="leads">
               <input type="text" name="search" placeholder="Search name / phone / email" value="{{ search }}">
               <select name="stage">
                 <option value="">All stages</option>
@@ -380,102 +858,36 @@
             {% if leads %}
               {% for l in leads %}
                 {% set sc = l['Lead Score']|int %}
+                {% set tag_set = (l['Tags'] or '')|lower %}
+                {% set is_hot = (l['Stage'] in ['Hot Lead', 'Payment Sent']) or ('hot' in tag_set) %}
+                {% set is_paid = (l['Payment Status']|string|lower == 'paid') %}
                 <a class="lead {% if l['Phone']|string == selected %}active{% endif %}"
-                   href="/dashboard?phone={{ l['Phone'] }}&search={{ search }}&stage={{ stage_filter }}"
+                   href="/dashboard?tab=leads&phone={{ l['Phone'] }}&search={{ search }}&stage={{ stage_filter }}"
                    data-phone="{{ l['Phone'] }}">
                   <div class="row1">
-                    <span class="name">{{ l['Name'] or l['WhatsApp Name'] or l['Phone'] }}
-                      <span class="badge" data-badge="{{ l['Phone'] }}">new</span></span>
+                    <span class="name">
+                      {% if l['_unread'] %}<span class="unread-dot" title="Unread"></span>{% endif %}
+                      {{ l['Name'] or l['WhatsApp Name'] or l['Phone'] }}
+                      {% if is_hot %}<span class="badge hot" title="Hot lead">🔥</span>{% endif %}
+                    </span>
                     <span class="score {% if sc >= 40 %}hi{% elif sc >= 15 %}md{% else %}lo{% endif %}">{{ sc }}</span>
                   </div>
                   <div class="meta">
                     <span>{{ l['Phone'] }}</span><span class="dot">·</span>
                     <span>{{ l['Course Interest'] or '—' }}</span>
                     <span class="stage-pill">{{ l['Stage'] or 'New Lead' }}</span>
+                    {% if is_paid %}<span class="pay-chip">Paid</span>
+                    {% elif l['Payment Status'] %}<span class="pay-chip unpaid">{{ l['Payment Status'] }}</span>{% endif %}
                   </div>
                 </a>
               {% endfor %}
             {% else %}
-              <div class="empty">No leads found.</div>
+              <div class="empty"><span class="big">🔍</span>No leads match your filters — try a different search or stage.</div>
             {% endif %}
           </div>
         </div>
 
-        <!-- Chat -->
-        <div class="center">
-          {% if selected %}
-            <div class="chat-head">
-              <div>
-                <div class="title">{{ (lead['Name'] if lead else '') or selected }}</div>
-                <div class="sub">{{ selected }}
-                  {% if lead %}· score {{ lead['Lead Score'] }} · {{ lead['Priority'] or '—' }} priority{% endif %}</div>
-              </div>
-              <div class="spacer"></div>
-              <div class="panel">
-                <form method="POST" action="/lead_action">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                  <input type="hidden" name="phone" value="{{ selected }}">
-                  <input type="hidden" name="action" value="set_stage">
-                  <select name="stage" onchange="this.form.submit()">
-                    {% for s in stages %}
-                      <option value="{{ s }}" {% if lead and s == lead['Stage'] %}selected{% endif %}>{{ s }}</option>
-                    {% endfor %}
-                  </select>
-                </form>
-                {% if lead and (lead['AI Paused']|string|lower == 'yes') %}
-                  <form method="POST" action="/lead_action">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <input type="hidden" name="phone" value="{{ selected }}">
-                    <input type="hidden" name="action" value="resume_ai">
-                    <button class="ok" type="submit">▶ Resume AI</button>
-                  </form>
-                {% else %}
-                  <form method="POST" action="/lead_action">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                    <input type="hidden" name="phone" value="{{ selected }}">
-                    <input type="hidden" name="action" value="pause_ai">
-                    <button class="warn" type="submit">⏸ Take over (pause AI)</button>
-                  </form>
-                {% endif %}
-                <form method="POST" action="/lead_action">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                  <input type="hidden" name="phone" value="{{ selected }}">
-                  <input type="hidden" name="action" value="add_note">
-                  <input type="text" name="note" placeholder="Add note…">
-                  <button type="submit">Save</button>
-                </form>
-              </div>
-            </div>
-
-            <div class="chat" id="chatBox">
-              {% for m in chat %}
-                {% set snd = m['Sender']|string %}
-                <div class="bubble {{ 'admin' if snd == 'Admin' else ('user' if snd == 'User' else 'bot') }}">
-                  <div class="msg">{{ m['Message'] }}<span class="t">{{ snd }} · {{ m['Time'] }}</span></div>
-                </div>
-              {% endfor %}
-              {% if not chat %}<div class="empty">No messages yet.</div>{% endif %}
-            </div>
-
-            <div class="quick">
-              <button type="button" onclick="insert('Here is your enrolment link: ' + PAYMENT)">💳 Payment Link</button>
-              <button type="button" onclick="insert('Here are the full course details 👇')">📘 Course Details</button>
-              <button type="button" onclick="insert('Can we schedule a quick call? What time suits you today?')">📞 Schedule Call</button>
-              <button type="button" onclick="insert('Just following up 😊 Did you get a chance to look at the program?')">🔔 Follow-up</button>
-            </div>
-
-            <div class="sendbox">
-              <form method="POST" action="/send_manual" id="sendForm">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-                <input type="hidden" name="phone" value="{{ selected }}">
-                <textarea name="msg" id="msgBox" placeholder="Type a message…" required></textarea>
-                <div class="actions"><button type="submit">Send</button></div>
-              </form>
-            </div>
-          {% else %}
-            <div class="empty">Select a lead to view the conversation.</div>
-          {% endif %}
-        </div>
+        {{ chat_panel('leads') }}
 
         <!-- Lead details -->
         <div class="right">
@@ -528,15 +940,406 @@
               <div class="notes-box">{{ lead['Notes'] }}</div>
             {% endif %}
           {% else %}
-            <div class="empty">Lead details will appear here once you select a conversation.</div>
+            <div class="empty">👤 Lead details will appear here once you select a conversation.</div>
           {% endif %}
         </div>
       </div>
+
+      {% elif active_tab == 'messages' %}
+      <!-- ============================= MESSAGES CENTER ============================= -->
+      <div class="layout">
+        <!-- Conversation list -->
+        <div class="left">
+          <div class="filters">
+            <form method="GET" action="/dashboard">
+              <input type="hidden" name="tab" value="messages">
+              <input type="text" name="msearch" placeholder="Search phone or name" value="{{ msearch }}">
+              <input type="text" name="mdate" placeholder="DD-MM-YYYY" value="{{ mdate }}" style="max-width:120px;">
+              <select name="msender" style="max-width:110px;">
+                <option value="">Any sender</option>
+                <option value="User" {% if msender == 'User' %}selected{% endif %}>Lead</option>
+                <option value="Admin" {% if msender == 'Admin' %}selected{% endif %}>Admin</option>
+                <option value="Bot" {% if msender == 'Bot' %}selected{% endif %}>Bot</option>
+              </select>
+              <button type="submit">Go</button>
+            </form>
+          </div>
+
+          <div class="lead-list" id="convList">
+            {% if conversations %}
+              {% for c in conversations %}
+                <a class="conv {% if c.phone == selected %}active{% endif %}"
+                   href="/dashboard?tab=messages&phone={{ c.phone }}&msearch={{ msearch }}&mdate={{ mdate }}&msender={{ msender }}">
+                  <div class="row1">
+                    <span class="name">{{ c.name or c.phone }}{% if not c.is_lead %} <span class="not-a-lead">(not a lead)</span>{% endif %}</span>
+                    <span class="time">{{ c.last_time }}</span>
+                  </div>
+                  <div class="preview">
+                    <span class="sender-tag {{ c.last_sender }}">{{ c.last_sender }}</span>
+                    <span>{{ c.last_message }}</span>
+                  </div>
+                </a>
+              {% endfor %}
+            {% else %}
+              <div class="empty"><span class="big">💬</span>No conversations yet — messages will appear here as soon as students write in.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        {{ chat_panel('messages') }}
+
+        <div class="right">
+          {% if selected and lead %}
+            <div class="section-label">Contact</div>
+            <div class="detail-card">
+              <div class="detail-avatar">{{ ((lead['Name'] or selected)|string)[:1]|upper }}</div>
+              <div class="dname">{{ lead['Name'] or lead['WhatsApp Name'] or '—' }}</div>
+              <div class="dphone">{{ selected }}</div>
+              <div class="detail-row" style="border-top:none; margin-top:14px;">
+                <span class="k">Stage</span><span class="v">{{ lead['Stage'] or 'New Lead' }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="k">Course</span><span class="v">{{ lead['Course Interest'] or '—' }}</span>
+              </div>
+            </div>
+          {% elif selected %}
+            <div class="section-label">Contact</div>
+            <div class="detail-card">
+              <div class="detail-avatar">{{ selected[:1] }}</div>
+              <div class="dname">Unknown number</div>
+              <div class="dphone">{{ selected }}</div>
+              <div style="font-size:12px; color:var(--text-faint); margin-top:12px;">
+                This number isn't a lead yet. If they message in, a lead will be created automatically.
+              </div>
+            </div>
+          {% else %}
+            <div class="empty">💬 Select a conversation on the left.</div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% elif active_tab == 'training' %}
+      <!-- ============================= AI TRAINING ============================= -->
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h2>AI Training</h2>
+            <div class="sub">Manage FAQ entries the SmartVersa knowledge base is built from.</div>
+          </div>
+        </div>
+
+        <div class="training-grid">
+          <div class="faq-form">
+            <h3>{{ 'Edit FAQ' if edit_faq else 'Add Question' }}</h3>
+            <div class="hint">{{ 'Editing “' + edit_faq['Question'][:40] + ('…' if edit_faq['Question']|length > 40 else '') + '”' if edit_faq else 'Add a new question + answer pair for the counsellor knowledge base.' }}</div>
+            <form method="POST" action="/faq_action" id="faqForm">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <input type="hidden" name="action" value="{{ 'edit' if edit_faq else 'add' }}">
+              {% if edit_faq %}<input type="hidden" name="faq_id" value="{{ edit_faq['ID'] }}">{% endif %}
+
+              <div class="field">
+                <label class="f-label">Question</label>
+                <input type="text" name="question" placeholder="e.g. Is there a refund policy?" value="{{ edit_faq['Question'] if edit_faq else '' }}" required>
+              </div>
+              <div class="field">
+                <label class="f-label">Answer</label>
+                <textarea name="answer" placeholder="Write the exact answer the counsellor should give…" required>{{ edit_faq['Answer'] if edit_faq else '' }}</textarea>
+              </div>
+              <div class="field row2">
+                <div>
+                  <label class="f-label">Category</label>
+                  <input type="text" name="category" placeholder="e.g. Pricing" value="{{ edit_faq['Category'] if edit_faq else '' }}">
+                </div>
+                <div>
+                  <label class="f-label">Language</label>
+                  <select name="language">
+                    {% for lg in ['English','Hindi','Hinglish'] %}
+                      <option value="{{ lg }}" {% if edit_faq and edit_faq['Language'] == lg %}selected{% elif not edit_faq and lg == 'English' %}selected{% endif %}>{{ lg }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label class="f-label">Keywords <span style="font-weight:400; text-transform:none;">(comma-separated)</span></label>
+                <input type="text" name="keywords" placeholder="refund, cancel, money back" value="{{ edit_faq['Keywords'] if edit_faq else '' }}">
+              </div>
+              {% if not edit_faq %}
+              <div class="field">
+                <label class="f-label">Status</label>
+                <select name="status">
+                  <option value="Active" selected>Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+              {% endif %}
+
+              <div class="form-actions">
+                <button class="btn" type="submit">{{ 'Save Changes' if edit_faq else 'Add FAQ' }}</button>
+                {% if edit_faq %}<a class="btn ghost" href="/dashboard?tab=training" style="text-decoration:none; display:inline-flex; align-items:center;">Cancel</a>{% endif %}
+              </div>
+            </form>
+          </div>
+
+          <div>
+            <form method="GET" action="/dashboard" class="faq-toolbar">
+              <input type="hidden" name="tab" value="training">
+              <input type="text" name="fsearch" placeholder="Search question, answer, keywords…" value="{{ faq_search }}">
+              <select name="fcategory">
+                <option value="">All categories</option>
+                {% for c in faq_categories %}
+                  <option value="{{ c }}" {% if c == faq_category_filter %}selected{% endif %}>{{ c }}</option>
+                {% endfor %}
+              </select>
+              <select name="fstatus">
+                <option value="">All statuses</option>
+                <option value="Active" {% if faq_status_filter == 'Active' %}selected{% endif %}>Active</option>
+                <option value="Inactive" {% if faq_status_filter == 'Inactive' %}selected{% endif %}>Inactive</option>
+              </select>
+              <button class="btn ghost" type="submit">Filter</button>
+            </form>
+
+            <div class="faq-list">
+              {% if faqs %}
+                {% for f in faqs %}
+                  <div class="faq-card">
+                    <div class="fq-head">
+                      <div class="fq-q">{{ f['Question'] }}</div>
+                      <span class="status-pill {{ f['Status'] }}">{{ f['Status'] or 'Active' }}</span>
+                    </div>
+                    <div class="fq-a">{{ f['Answer'] }}</div>
+                    <div class="fq-meta">
+                      {% if f['Category'] %}<span class="chip cat">{{ f['Category'] }}</span>{% endif %}
+                      {% if f['Language'] %}<span class="chip lang">{{ f['Language'] }}</span>{% endif %}
+                      {% if f['Keywords'] %}<span class="chip">🔑 {{ f['Keywords'] }}</span>{% endif %}
+                    </div>
+                    <div class="fq-actions">
+                      <a class="btn ghost sm" href="/dashboard?tab=training&faq_id={{ f['ID'] }}" style="text-decoration:none;">✏ Edit</a>
+                      {% if f['Status'] == 'Inactive' %}
+                        <form method="POST" action="/faq_action">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                          <input type="hidden" name="faq_id" value="{{ f['ID'] }}">
+                          <input type="hidden" name="action" value="enable">
+                          <button class="btn ghost sm" type="submit">▶ Enable</button>
+                        </form>
+                      {% else %}
+                        <form method="POST" action="/faq_action">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                          <input type="hidden" name="faq_id" value="{{ f['ID'] }}">
+                          <input type="hidden" name="action" value="disable">
+                          <button class="btn ghost sm" type="submit">⏸ Disable</button>
+                        </form>
+                      {% endif %}
+                      <form method="POST" action="/faq_action" onsubmit="return confirm('Delete this FAQ permanently?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <input type="hidden" name="faq_id" value="{{ f['ID'] }}">
+                        <input type="hidden" name="action" value="delete">
+                        <button class="btn warn sm" type="submit">🗑 Delete</button>
+                      </form>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="empty"><span class="big">🧠</span>No FAQs yet — add your first question and answer on the left.</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% elif active_tab == 'newmsg' %}
+      <!-- ============================= NEW MESSAGE ============================= -->
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h2>New Message</h2>
+            <div class="sub">Start a WhatsApp conversation with any number — it doesn't need to be an existing lead.</div>
+          </div>
+        </div>
+
+        <div class="newmsg-card">
+          <form method="POST" action="/send_manual" id="newMsgForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="hidden" name="tab" value="newmsg">
+            <div class="field">
+              <label class="f-label">Phone Number</label>
+              <input type="tel" name="phone" placeholder="e.g. 9198XXXXXXXX" required>
+            </div>
+            <div class="field">
+              <label class="f-label">Name <span style="color:var(--text-faint); font-weight:400;">(optional)</span></label>
+              <input type="text" name="name" placeholder="e.g. Priya Sharma">
+              <div style="font-size:11.5px; color:var(--text-faint); margin-top:5px;">
+                If this number isn't already a lead, one will be created automatically when you send.
+              </div>
+            </div>
+            <div class="field">
+              <label class="f-label">Message</label>
+              <textarea name="msg" placeholder="Type your message…" required></textarea>
+            </div>
+            <button class="btn" type="submit">Send Message</button>
+          </form>
+        </div>
+      </div>
+
+      {% elif active_tab == 'analytics' %}
+      <!-- ============================= ANALYTICS ============================= -->
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h2>Analytics</h2>
+            <div class="sub">Pipeline health and follow-up performance at a glance.</div>
+          </div>
+        </div>
+
+        <div class="cards compact" style="padding:0; margin-bottom:0;">
+          <div class="card c-total"><div class="n">{{ stats.total }}</div><div class="l">Total Leads</div></div>
+          <div class="card c-sales"><div class="n">{{ stats.sales }}</div><div class="l">Converted</div></div>
+          <div class="card c-rev"><div class="n">₹{{ stats.revenue }}</div><div class="l">Revenue</div></div>
+          <div class="card c-conv"><div class="n">{{ stats.conversion_rate }}%</div><div class="l">Conversion Rate</div></div>
+        </div>
+
+        <div class="analytics-grid">
+          <div class="panel-card">
+            <h3>Pipeline by Stage</h3>
+            {% set stage_map = {'New': stats.new, 'Warm': stats.warm, 'Hot': stats.hot, 'Converted': stats.converted, 'Not Interested': stats.not_interested} %}
+            {% set maxv = ([stats.new, stats.warm, stats.hot, stats.converted, stats.not_interested, 1]|max) %}
+            {% for label, val in stage_map.items() %}
+              <div class="bar-row">
+                <span class="lbl">{{ label }}</span>
+                <span class="track"><span class="fill" style="width:{{ (val / maxv * 100)|round(0, 'floor') }}%;"></span></span>
+                <span class="val">{{ val }}</span>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="panel-card">
+            <h3>Follow-up Signals Detected</h3>
+            {% if followup_stats %}
+              {% set fmax = (followup_stats.values()|list|max) %}
+              {% for cat, val in followup_stats.items() %}
+                <div class="bar-row">
+                  <span class="lbl">{{ cat }}</span>
+                  <span class="track"><span class="fill" style="width:{{ (val / fmax * 100)|round(0, 'floor') }}%;"></span></span>
+                  <span class="val">{{ val }}</span>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty" style="padding:16px 4px;">No follow-up signals detected yet.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% elif active_tab == 'sheets' %}
+      <!-- ============================= GOOGLE SHEETS MANAGER (Phase 6) ============================= -->
+      <div class="sheets-shell">
+        <div class="sheets-toolbar">
+          <select class="sheet-picker" id="shSheetPicker">
+            {% for s in sheet_names %}
+              <option value="{{ s }}" {% if s == selected_sheet %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+          <input type="text" class="sh-search" id="shSearch" placeholder="Search this sheet…">
+          <button class="sh-btn" id="shRefreshBtn" title="Force a fresh read from Google Sheets">⟳ Refresh</button>
+          <div class="spacer"></div>
+          <button class="sh-btn" id="shAddRowBtn">＋ Add Row</button>
+          <a class="sh-btn" id="shExportCsv" href="#">⬇ CSV</a>
+          <a class="sh-btn" id="shExportXlsx" href="#">⬇ Excel</a>
+          <button class="sh-btn primary" id="shImportBtn" style="display:none;">⬆ Import CSV</button>
+        </div>
+        <div class="sheets-meta">
+          <span><span class="live-dot"></span> Synced with Google Sheets</span>
+          <span id="shRowCount">—</span>
+          <span id="shSaveStatus"></span>
+        </div>
+
+        <div id="shAddRowForm" class="add-row-form" style="display:none;"></div>
+
+        <div class="grid-wrap" id="shGridWrap">
+          <div class="sheet-loading"><div class="spin"></div>Loading worksheet…</div>
+        </div>
+
+        <div class="sheets-pager" id="shPager" style="display:none;">
+          <button id="shPrevBtn">‹ Prev</button>
+          <span id="shPageLabel">Page 1 of 1</span>
+          <button id="shNextBtn">Next ›</button>
+          <div class="spacer"></div>
+          <label style="display:flex; align-items:center; gap:6px;">
+            Rows per page
+            <select id="shPerPage">
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-backdrop" id="shImportModal">
+        <div class="modal-card">
+          <h3>Import CSV into Leads</h3>
+          <p>The file must include a "Phone" column. Rows matching an existing phone number update that lead instead of creating a duplicate.</p>
+          <form method="POST" action="/api/sheets/leads/import" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+            <input type="file" name="file" accept=".csv" required>
+            <div class="modal-actions">
+              <button type="button" class="sh-btn" onclick="document.getElementById('shImportModal').classList.remove('open')">Cancel</button>
+              <button type="submit" class="sh-btn primary">Import</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      {% elif active_tab == 'settings' %}
+      <!-- ============================= SETTINGS (placeholder) ============================= -->
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h2>Settings</h2>
+            <div class="sub">More configuration options are coming soon.</div>
+          </div>
+        </div>
+        <div class="settings-list">
+          <div class="settings-row"><span class="k">Logged in as</span><span class="v">{{ user }}</span></div>
+          <div class="settings-row"><span class="k">WhatsApp integration</span><span class="v">Connected via Cloud API</span></div>
+          <div class="settings-row"><span class="k">Data storage</span><span class="v">Google Sheets</span></div>
+          <div class="settings-row"><span class="k">Team &amp; permissions</span><span class="v">Coming soon</span></div>
+          <div class="settings-row"><span class="k">Notification preferences</span><span class="v">Coming soon</span></div>
+        </div>
+      </div>
+      {% endif %}
     </div>
   </div>
 
   <script>
     const PAYMENT = "{{ payment_url|default('') }}";
+    const ACTIVE_TAB = "{{ active_tab }}";
+    const CSRF_TOKEN = "{{ csrf_token }}";
+    const SELECTED_SHEET = {{ (selected_sheet or "")|tojson }};
+    const LEADS_SHEET_NAME = {{ (leads_sheet_name or "Leads")|tojson }};
+    const MESSAGES_SHEET_NAME = {{ (messages_sheet_name or "Messages")|tojson }};
+
+    function copyPhone(phone) {
+      navigator.clipboard.writeText(phone).then(function () {
+        showToast("Copied " + phone, "success");
+      }).catch(function () {
+        showToast("Couldn't copy — copy it manually.", "error");
+      });
+    }
+
+    // Reusable toast, shared by the server-rendered post-redirect toast
+    // logic below and by the AJAX-driven Google Sheets Manager.
+    function showToast(msg, type) {
+      const wrap = document.getElementById("toastWrap");
+      if (!wrap) return;
+      const el = document.createElement("div");
+      el.className = "toast " + (type === "error" ? "error" : "success");
+      el.innerHTML = '<span class="dot"></span><span></span>';
+      el.querySelector("span:last-child").textContent = msg;
+      wrap.appendChild(el);
+      setTimeout(function () { el.remove(); }, 4500);
+    }
+
     function insert(text) {
       const box = document.getElementById("msgBox");
       if (!box) return;
@@ -550,19 +1353,49 @@
       if (c) c.scrollTop = c.scrollHeight;
     })();
 
-    // Unread badges + subtle beep (uses localStorage — works in a real browser)
+    // Disable submit buttons on send to prevent double-sends + show a
+    // lightweight loading state (no external JS framework needed).
     (function () {
-      try {
-        document.querySelectorAll(".lead").forEach(function (el) {
-          // placeholder for future per-lead unread counts
+      ["sendForm", "newMsgForm", "faqForm"].forEach(function (id) {
+        const form = document.getElementById(id);
+        if (!form) return;
+        form.addEventListener("submit", function () {
+          const btn = form.querySelector("button[type=submit]");
+          if (btn && !btn.disabled) {
+            btn.dataset.label = btn.textContent;
+            btn.textContent = "Sending…";
+            btn.disabled = true;
+          }
         });
-      } catch (e) {}
+      });
     })();
 
-    // No-refresh-while-typing idle auto-reload (preserved from original)
+    // Toasts — read ?toast=&toast_type= once, show it, then strip from the URL.
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const msg = params.get("toast");
+      if (msg) {
+        const type = params.get("toast_type") === "error" ? "error" : "success";
+        const wrap = document.getElementById("toastWrap");
+        const el = document.createElement("div");
+        el.className = "toast " + type;
+        el.innerHTML = '<span class="dot"></span><span>' + msg.replace(/</g, "&lt;") + "</span>";
+        wrap.appendChild(el);
+        setTimeout(function () { el.remove(); }, 4500);
+
+        params.delete("toast");
+        params.delete("toast_type");
+        const qs = params.toString();
+        const newUrl = window.location.pathname + (qs ? "?" + qs : "");
+        window.history.replaceState({}, "", newUrl);
+      }
+    })();
+
+    // No-refresh-while-typing idle auto-reload (preserved from original;
+    // also powers Messages Center "auto refresh").
     (function () {
       const msgBox = document.getElementById("msgBox");
-      const search = document.querySelector("input[name=search]");
+      const search = document.querySelector("input[name=search], input[name=msearch]");
       let typing = false;
       [msgBox, search].forEach(function (b) {
         if (!b) return;
@@ -570,12 +1403,335 @@
         b.addEventListener("input", () => typing = true);
         b.addEventListener("blur", () => typing = false);
       });
-      setInterval(function () {
-        const active = document.activeElement;
-        const busy = typing || active === msgBox || active === search;
-        const draft = msgBox && msgBox.value.trim().length > 0;
-        if (!busy && !draft) window.location.reload();
-      }, 20000);
+      const refreshTabs = ["leads", "messages"];
+      if (refreshTabs.includes(ACTIVE_TAB)) {
+        setInterval(function () {
+          const active = document.activeElement;
+          const busy = typing || active === msgBox || active === search;
+          const draft = msgBox && msgBox.value.trim().length > 0;
+          if (!busy && !draft) window.location.reload();
+        }, 20000);
+      }
+    })();
+    // ===================================================================== //
+    // Google Sheets Manager (Phase 6) — fully AJAX-driven spreadsheet grid.
+    // Only runs its network calls when the tab is actually open/visited;
+    // building it unconditionally keeps the code simple and it's a no-op
+    // (a few hidden DOM lookups) on every other tab.
+    // ===================================================================== //
+    (function () {
+      const picker = document.getElementById("shSheetPicker");
+      if (!picker) return; // Sheets tab not rendered on this load
+
+      const state = {
+        sheet: SELECTED_SHEET || picker.value || "",
+        search: "",
+        sortCol: "",
+        sortDir: "asc",
+        page: 1,
+        perPage: 25,
+        editing: false,
+      };
+
+      const els = {
+        wrap: document.getElementById("shGridWrap"),
+        search: document.getElementById("shSearch"),
+        refresh: document.getElementById("shRefreshBtn"),
+        addBtn: document.getElementById("shAddRowBtn"),
+        addForm: document.getElementById("shAddRowForm"),
+        exportCsv: document.getElementById("shExportCsv"),
+        exportXlsx: document.getElementById("shExportXlsx"),
+        importBtn: document.getElementById("shImportBtn"),
+        pager: document.getElementById("shPager"),
+        prevBtn: document.getElementById("shPrevBtn"),
+        nextBtn: document.getElementById("shNextBtn"),
+        pageLabel: document.getElementById("shPageLabel"),
+        perPageSel: document.getElementById("shPerPage"),
+        rowCount: document.getElementById("shRowCount"),
+        saveStatus: document.getElementById("shSaveStatus"),
+      };
+
+      function csrfForm(extra) {
+        const fd = new FormData();
+        fd.append("csrf_token", CSRF_TOKEN);
+        Object.keys(extra || {}).forEach(function (k) { fd.append(k, extra[k]); });
+        return fd;
+      }
+
+      function updateToolbarForSheet() {
+        const isLeads = state.sheet === LEADS_SHEET_NAME;
+        els.importBtn.style.display = isLeads ? "inline-flex" : "none";
+        els.exportCsv.href = "/api/sheets/" + encodeURIComponent(state.sheet) + "/export.csv";
+        els.exportXlsx.href = "/api/sheets/" + encodeURIComponent(state.sheet) + "/export.xlsx";
+      }
+
+      function buildUrl(fresh) {
+        const params = new URLSearchParams({
+          search: state.search, sort: state.sortCol, dir: state.sortDir,
+          page: state.page, per_page: state.perPage,
+        });
+        if (fresh) params.set("fresh", "1");
+        return "/api/sheets/" + encodeURIComponent(state.sheet) + "?" + params.toString();
+      }
+
+      function load(fresh) {
+        if (!state.sheet) return;
+        updateToolbarForSheet();
+        els.wrap.innerHTML = '<div class="sheet-loading"><div class="spin"></div>Loading worksheet…</div>';
+        fetch(buildUrl(fresh))
+          .then(function (r) { return r.json(); })
+          .then(renderGrid)
+          .catch(function () {
+            els.wrap.innerHTML = '<div class="sheet-empty">Couldn\'t load this worksheet. <a href="#" onclick="return false;" id="shRetry">Try again</a></div>';
+            const retry = document.getElementById("shRetry");
+            if (retry) retry.addEventListener("click", function () { load(true); });
+          });
+      }
+
+      function esc(v) {
+        return String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function renderGrid(data) {
+        if (!data || !data.headers || !data.headers.length) {
+          els.wrap.innerHTML = '<div class="sheet-empty">🗂 This worksheet has no columns yet.</div>';
+          els.pager.style.display = "none";
+          els.rowCount.textContent = "";
+          buildAddForm([]);
+          return;
+        }
+        const headers = data.headers;
+        const isLeads = state.sheet === LEADS_SHEET_NAME;
+        buildAddForm(headers);
+
+        let html = '<table class="sheet-grid"><thead><tr>';
+        headers.forEach(function (h) {
+          let ind = "";
+          if (state.sortCol === h) ind = '<span class="sort-ind">' + (state.sortDir === "asc" ? "▲" : "▼") + '</span>';
+          html += '<th data-col="' + esc(h) + '">' + esc(h) + ind + '</th>';
+        });
+        html += '<th class="qa-col">Actions</th></tr></thead><tbody>';
+
+        if (!data.rows.length) {
+          html += '<tr><td colspan="' + (headers.length + 1) + '"><div class="sheet-empty">No rows match — try clearing the search, or add a new row.</div></td></tr>';
+        } else {
+          data.rows.forEach(function (row) {
+            html += '<tr data-row="' + row._row + '">';
+            headers.forEach(function (h) {
+              html += '<td class="editable" data-col="' + esc(h) + '" title="Click to edit">' + esc(row[h]) + '</td>';
+            });
+            html += '<td class="row-actions">';
+            html += '<button class="row-act-btn dup" title="Duplicate row">⧉</button>';
+            html += '<button class="row-act-btn del" title="Delete row">🗑</button>';
+            if (isLeads && row["Phone"]) {
+              const phone = String(row["Phone"]);
+              html += '<a class="row-act-btn wa" target="_blank" rel="noopener" href="https://wa.me/' + encodeURIComponent(phone.replace(/\+/g, "")) + '" title="WhatsApp">💬</a>';
+              html += '<a class="row-act-btn" href="tel:' + esc(phone) + '" title="Call">📞</a>';
+              html += '<button class="row-act-btn" data-paid="' + esc(phone) + '" title="Mark Paid">✅</button>';
+              html += '<a class="row-act-btn" href="/dashboard?tab=leads&phone=' + encodeURIComponent(phone) + '" title="View conversation">👁</a>';
+            }
+            html += '</td></tr>';
+          });
+        }
+        html += '</tbody></table>';
+        els.wrap.innerHTML = html;
+
+        els.rowCount.textContent = data.total + (data.total === 1 ? " row" : " rows");
+        els.pager.style.display = data.total ? "flex" : "none";
+        els.pageLabel.textContent = "Page " + data.page + " of " + data.pages;
+        els.prevBtn.disabled = data.page <= 1;
+        els.nextBtn.disabled = data.page >= data.pages;
+        els.perPageSel.value = String(data.per_page);
+
+        wireHeaderSort();
+        wireCellEditing();
+        wireRowActions();
+      }
+
+      function wireHeaderSort() {
+        els.wrap.querySelectorAll("thead th[data-col]").forEach(function (th) {
+          th.addEventListener("click", function () {
+            const col = th.getAttribute("data-col");
+            if (state.sortCol === col) {
+              state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+            } else {
+              state.sortCol = col; state.sortDir = "asc";
+            }
+            state.page = 1;
+            load(false);
+          });
+        });
+      }
+
+      function wireCellEditing() {
+        els.wrap.querySelectorAll("td.editable").forEach(function (td) {
+          td.addEventListener("click", function startEdit() {
+            if (td.classList.contains("editing") || state.editing) return;
+            const original = td.textContent;
+            const row = td.closest("tr").getAttribute("data-row");
+            const col = td.getAttribute("data-col");
+            state.editing = true;
+            td.classList.add("editing");
+            td.innerHTML = "";
+            const input = document.createElement("input");
+            input.type = "text";
+            input.value = original;
+            td.appendChild(input);
+            input.focus();
+            input.select();
+
+            function commit(save) {
+              state.editing = false;
+              td.classList.remove("editing");
+              const newVal = input.value;
+              if (!save || newVal === original) {
+                td.textContent = original;
+                return;
+              }
+              td.textContent = newVal;
+              td.classList.add("saving");
+              els.saveStatus.textContent = "Saving…";
+              fetch("/api/sheets/" + encodeURIComponent(state.sheet) + "/cell", {
+                method: "POST", body: csrfForm({ row: row, header: col, value: newVal }),
+              }).then(function (r) { return r.json(); }).then(function (res) {
+                td.classList.remove("saving");
+                if (res.ok) {
+                  els.saveStatus.textContent = "Saved ✓";
+                  setTimeout(function () { els.saveStatus.textContent = ""; }, 1500);
+                } else {
+                  td.textContent = original;
+                  showToast("Couldn't save that cell — please try again.", "error");
+                  els.saveStatus.textContent = "";
+                }
+              }).catch(function () {
+                td.classList.remove("saving");
+                td.textContent = original;
+                showToast("Network error — cell not saved.", "error");
+                els.saveStatus.textContent = "";
+              });
+            }
+
+            input.addEventListener("keydown", function (e) {
+              if (e.key === "Enter") { e.preventDefault(); commit(true); }
+              else if (e.key === "Escape") { e.preventDefault(); commit(false); }
+            });
+            input.addEventListener("blur", function () { commit(true); });
+          });
+        });
+      }
+
+      function wireRowActions() {
+        els.wrap.querySelectorAll(".row-act-btn.dup").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            const row = btn.closest("tr").getAttribute("data-row");
+            fetch("/api/sheets/" + encodeURIComponent(state.sheet) + "/row/" + row + "/duplicate", {
+              method: "POST", body: csrfForm(),
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              showToast(res.ok ? "Row duplicated." : "Couldn't duplicate that row.", res.ok ? "success" : "error");
+              if (res.ok) load(true);
+            });
+          });
+        });
+        els.wrap.querySelectorAll(".row-act-btn.del").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            if (!confirm("Delete this row permanently? This cannot be undone.")) return;
+            const row = btn.closest("tr").getAttribute("data-row");
+            fetch("/api/sheets/" + encodeURIComponent(state.sheet) + "/row/" + row + "/delete", {
+              method: "POST", body: csrfForm(),
+            }).then(function (r) { return r.json(); }).then(function (res) {
+              showToast(res.ok ? "Row deleted." : "Couldn't delete that row.", res.ok ? "success" : "error");
+              if (res.ok) load(true);
+            });
+          });
+        });
+        els.wrap.querySelectorAll("[data-paid]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            const phone = btn.getAttribute("data-paid");
+            fetch("/lead_action", {
+              method: "POST", body: csrfForm({ phone: phone, action: "mark_paid" }),
+            }).then(function () {
+              showToast("Marked " + phone + " as Paid.", "success");
+              load(true);
+            }).catch(function () { showToast("Couldn't update payment status.", "error"); });
+          });
+        });
+      }
+
+      function buildAddForm(headers) {
+        if (!headers.length) { els.addForm.innerHTML = ""; return; }
+        let html = "";
+        headers.forEach(function (h) {
+          html += '<input type="text" data-field="' + esc(h) + '" placeholder="' + esc(h) + '">';
+        });
+        html += '<button class="sh-btn primary" id="shAddRowSave">Save Row</button>';
+        html += '<button class="sh-btn" id="shAddRowCancel">Cancel</button>';
+        els.addForm.innerHTML = html;
+        document.getElementById("shAddRowSave").addEventListener("click", function () {
+          const values = {};
+          els.addForm.querySelectorAll("[data-field]").forEach(function (inp) {
+            values[inp.getAttribute("data-field")] = inp.value;
+          });
+          fetch("/api/sheets/" + encodeURIComponent(state.sheet) + "/row", {
+            method: "POST", body: csrfForm(values),
+          }).then(function (r) { return r.json(); }).then(function (res) {
+            showToast(res.ok ? "Row added." : "Couldn't add that row.", res.ok ? "success" : "error");
+            if (res.ok) { els.addForm.style.display = "none"; state.page = 1; load(true); }
+          });
+        });
+        document.getElementById("shAddRowCancel").addEventListener("click", function () {
+          els.addForm.style.display = "none";
+        });
+      }
+
+      // ---- Toolbar wiring ----
+      picker.addEventListener("change", function () {
+        state.sheet = picker.value; state.page = 1; state.search = "";
+        state.sortCol = ""; els.search.value = "";
+        load(false);
+      });
+
+      let searchTimer = null;
+      els.search.addEventListener("input", function () {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(function () {
+          state.search = els.search.value; state.page = 1; load(false);
+        }, 350);
+      });
+
+      els.refresh.addEventListener("click", function () { load(true); });
+
+      els.addBtn.addEventListener("click", function () {
+        els.addForm.style.display = els.addForm.style.display === "none" ? "flex" : "none";
+      });
+
+      els.importBtn.addEventListener("click", function () {
+        document.getElementById("shImportModal").classList.add("open");
+      });
+
+      els.prevBtn.addEventListener("click", function () {
+        if (state.page > 1) { state.page -= 1; load(false); }
+      });
+      els.nextBtn.addEventListener("click", function () {
+        state.page += 1; load(false);
+      });
+      els.perPageSel.addEventListener("change", function () {
+        state.perPage = parseInt(els.perPageSel.value, 10) || 25;
+        state.page = 1; load(false);
+      });
+
+      // Auto Sync (Feature 8, best-effort): poll for changes made directly
+      // in Google Sheets (or by another admin) every 20s, unless the user
+      // is mid-edit or has the search box focused.
+      if (ACTIVE_TAB === "sheets") {
+        setInterval(function () {
+          const active = document.activeElement;
+          if (state.editing || active === els.search) return;
+          load(true);
+        }, 20000);
+      }
+
+      if (ACTIVE_TAB === "sheets") load(false);
+      else updateToolbarForSheet();
     })();
   </script>
 </body>

@@ -28,6 +28,7 @@ from config import Config
 from logger import log, safe
 import whatsapp
 import sheets
+import crm
 import ai
 from knowledge import (
     COURSES, course_by_choice, detect_intents, score_for,
@@ -94,15 +95,185 @@ _PHRASE_SYNONYMS = [
     ("only mobile", "mobile se ho jayega"),
 ]
 
+# --------------------------------------------------------------------------- #
+# Conversation-quality normalization — greetings/typos/emojis/short acks.
+# Real WhatsApp users type "hlo", "hy", "okk", "hmmm", "yes", "han", send bare
+# emojis, etc. knowledge.py's keyword lists don't cover every variant, which
+# was causing common greetings/acknowledgements to fall through to the
+# fallback instead of being recognized. This ONLY affects the text handed to
+# detect_intents() for matching — the real message is still what's stored,
+# displayed, and logged. knowledge.py itself is never touched.
+# --------------------------------------------------------------------------- #
+_EMOJI_TO_WORD = {
+    "\U0001F44D": "okay", "\U0001F64F": "thanks", "\U0001F60A": "okay",
+    "\u2764\uFE0F": "thanks", "\U0001F602": "okay",
+    "\U0001F600": "okay", "\U0001F642": "okay", "\U0001F44C": "okay",
+    "\U0001F525": "okay", "\U0001F601": "okay", "\U0001F64C": "thanks",
+}
+
+# Bare acknowledgement / filler words -> read as "okay" (knowledge.py's
+# "acknowledge" intent already fires on "okay") even though its own keyword
+# list doesn't cover all these short-reply variants.
+_ACK_SYNONYMS = {
+    "ok", "okk", "okkk", "k", "kk", "hmm", "hmmm", "hmmmm", "han", "haan",
+    "yes", "yess", "yup", "yeah", "ya", "done", "sure", "noted", "gotit",
+    "got it", "cool", "achha", "acha", "theek", "theek h", "thik hai",
+}
+
+# Praise / short positive reactions -- treated as acknowledgement too.
+_PRAISE_SYNONYMS = {"nice", "great", "awesome", "good", "superb", "perfect", "wow", "amazing"}
+
+# Common greeting misspellings not in knowledge.py's "greeting" keyword list.
+_GREETING_TYPOS = {
+    "hlo", "hy", "heyy", "heyyy", "hii", "hiii", "hiiii", "helo", "hellow",
+    "gm", "gud morning", "gud evening", "gud afternoon", "yo", "sup",
+    "heya", "hey there", "hola", "namaskar", "namaskaar", "morning",
+    "evening", "afternoon", "hlw", "hey buddy", "hii there", "hiya",
+}
+
+# Small-talk phrasing not in knowledge.py's own keyword list.
+_SMALL_TALK_TYPOS = {"who are you", "kon ho tum", "tum kaun ho", "aap kya ho"}
+
+# Common typos for words that already have real answers in knowledge.py --
+# fixed before intent matching so the bot never says "I don't know" about
+# something it actually knows.
+_TYPO_FIXES = {
+    "certficate": "certificate", "certifcate": "certificate", "certificat": "certificate",
+    "internsip": "internship", "intership": "internship", "interniship": "internship",
+    "placment": "placement", "placemnt": "placement", "plasment": "placement",
+    "pyhton": "python", "digitel": "digital", "sylabus": "syllabus",
+    "syllabuss": "syllabus", "projekt": "project",
+}
+
 
 def _normalize_for_intent(text: str) -> str:
     """Returns a version of `text` used ONLY for detect_intents() matching.
     The original text is still what's stored, displayed, and logged."""
-    low = (text or "").strip().lower()
+    t = (text or "").strip()
+    low = t.lower()
+
+    # Emoji-only (or emoji + minimal text) messages.
+    for emoji, word in _EMOJI_TO_WORD.items():
+        if emoji in t:
+            low = f"{low} {word}"
+
+    # Bare word normalization (exact match on the stripped message, since
+    # these are short standalone replies, not fragments of longer sentences).
+    stripped = re.sub(r"[^\w\s]", "", low).strip()
+    if stripped in _ACK_SYNONYMS:
+        low = f"{low} okay"
+    elif stripped in _PRAISE_SYNONYMS:
+        low = f"{low} okay"
+    elif stripped in _GREETING_TYPOS:
+        low = f"{low} hi"
+
+    for phrase in _SMALL_TALK_TYPOS:
+        if phrase in low:
+            low = f"{low} who made you"
+
+    # Known typo fixes, word-boundary safe.
+    for wrong, right in _TYPO_FIXES.items():
+        low = re.sub(r"(?<!\w)" + re.escape(wrong) + r"(?!\w)", right, low)
+
+    # Phrase-level synonyms (see _PHRASE_SYNONYMS above).
     for needle, keyword in _PHRASE_SYNONYMS:
         if needle in low:
             low = f"{low} {keyword}"
+
     return low
+
+
+# --------------------------------------------------------------------------- #
+# Anti-repetition — never send the exact same acknowledge/farewell/thanks/
+# fallback reply twice in a row, so short back-and-forth exchanges ("Ok" x5,
+# "bye" x3) don't read like a broken script.
+# --------------------------------------------------------------------------- #
+_ACK_VARIANTS = {
+    "English": [
+        "\U0001F44D Great! Let me know if you'd like to know anything else — pricing, syllabus, or how to enroll.",
+        "Got it \U0001F60A Feel free to ask about pricing, syllabus, certificate, or internship anytime.",
+        "\U0001F44C Cool, I'm here whenever you want to know more about the programs.",
+    ],
+    "Hindi": [
+        "\U0001F44D बढ़िया! कुछ और जानना हो — pricing, syllabus, या enroll कैसे करें — तो बताइए।",
+        "समझ गया \U0001F60A pricing, syllabus, certificate या internship के बारे में कभी भी पूछ सकते हैं।",
+        "\U0001F44C ठीक है, program के बारे में कुछ भी जानना हो तो बताइए।",
+    ],
+    "Hinglish": [
+        "\U0001F44D Badhiya! Kuch aur jaanna ho — pricing, syllabus, ya enroll kaise karein — toh batao.",
+        "Got it \U0001F60A Pricing, syllabus, certificate ya internship ke baare mein kabhi bhi pooch sakte ho.",
+        "\U0001F44C Theek hai, program ke baare mein kuch bhi jaanna ho toh batao.",
+    ],
+}
+
+_FAREWELL_VARIANTS = {
+    "English": [
+        "\U0001F44B Thanks for chatting! Feel free to reach out anytime — have a great day!",
+        "Take care! \U0001F60A I'm right here whenever you want to continue.",
+    ],
+    "Hindi": [
+        "\U0001F44B बात करने के लिए धन्यवाद! जब चाहें फिर से संपर्क करें — आपका दिन शुभ हो!",
+        "ध्यान रखिए \U0001F60A जब भी बात करनी हो, मैं यहीं हूँ।",
+    ],
+    "Hinglish": [
+        "\U0001F44B Chat karne ke liye thanks! Jab bhi chaho phir se contact karo — have a great day!",
+        "Take care \U0001F60A Jab bhi baat karni ho, main yahin hoon.",
+    ],
+}
+
+_THANKS_VARIANTS = {
+    "English": [
+        "You're welcome! \U0001F60A Let me know if you have any other questions.",
+        "Anytime! \U0001F64C I'm here if anything else comes to mind.",
+    ],
+    "Hindi": [
+        "आपका स्वागत है! \U0001F60A कोई और सवाल हो तो बताइए।",
+        "कोई बात नहीं! \U0001F64C कुछ और पूछना हो तो बताइए।",
+    ],
+    "Hinglish": [
+        "Koi baat nahi! \U0001F60A Aur koi sawaal ho toh batao.",
+        "Anytime! \U0001F64C Kuch aur poochna ho toh batao.",
+    ],
+}
+
+_FALLBACK_VARIANTS = {
+    "English": [
+        "I'm not fully confident on that one \U0001F64F I can connect you with our counsellor, "
+        "or you can ask me about price, syllabus, or the certificate.",
+        "That's a bit outside what I can confirm myself \U0001F64F Want me to loop in our counsellor, "
+        "or ask about pricing, projects, or internship instead?",
+    ],
+    "Hindi": [
+        "मुझे इसका पक्का जवाब नहीं पता \U0001F64F चाहें तो counsellor से connect करवा दूँ, "
+        "या price/syllabus/certificate के बारे में पूछिए।",
+        "यह मुझे confirm नहीं है \U0001F64F चाहें तो counsellor से बात करवा दूँ, "
+        "या price/projects/internship के बारे में पूछिए।",
+    ],
+    "Hinglish": [
+        "Mujhe iska exact jawab nahi pata \U0001F64F chaho toh counsellor se connect karva doon, "
+        "ya price/syllabus/certificate ke baare mein poochho.",
+        "Yeh mujhe confirm nahi hai \U0001F64F chaho toh counsellor se baat karva doon, "
+        "ya price/projects/internship ke baare mein poochho.",
+    ],
+}
+
+
+def _last_bot_text(sess):
+    for turn in reversed(sess.get("history", [])):
+        if turn.get("role") == "bot":
+            return turn.get("text", "")
+    return None
+
+
+def _varied(sess, lang, variants):
+    """Pick a reply that differs from the last thing the bot actually said,
+    so acknowledgements/farewells/fallbacks don't repeat verbatim back to back."""
+    pool = variants.get(lang, variants["English"])
+    last = _last_bot_text(sess)
+    for candidate in pool:
+        if candidate != last:
+            return candidate
+    return pool[0]
 
 # Phrases that mean "tell me what's taught / included" -> grounded course details.
 _COURSE_INFO_PATTERNS = [
@@ -165,6 +336,8 @@ def _new_session(wa_name, first_text):
         "reco_stage": 0,          # 0 = not started, 1-3 = awaiting answer, "done" = finished
         "reco_answers": {},
         "reco_recommendation": "",
+        "followup_category": "",  # last detected follow-up signal category (Phase 4)
+        "followup_reason": "",    # phrase that triggered it
     }
 
 
@@ -208,6 +381,125 @@ def _tag(sess, intents):
     for i in intents:
         if i in ("price", "certificate", "payment", "internship", "placement", "syllabus"):
             sess["tags"].add(i)
+
+
+# --------------------------------------------------------------------------- #
+# Follow-up intelligence engine
+#
+# Reads every inbound message for a "soft objection" / stalling / interest
+# signal (the kind of thing a human counsellor would mentally file away —
+# "this one needs a parent's okay", "this one thinks it's expensive", etc.)
+# and silently tags the lead with a follow-up category + the exact phrase
+# that triggered it. This never changes what the bot replies with — it only
+# annotates the lead so app.py's follow-up cadence (Phase 4) can pick a
+# relevant, non-repetitive message instead of a generic reminder.
+#
+# Storage: piggybacks on the existing "Tags" column (a "fu_<category>"
+# entry, always kept singular — a fresh signal replaces the old one) and the
+# existing "Notes" column (one short audit line via crm.add_note). No new
+# sheet columns, no change to sheets.py/crm.py.
+# --------------------------------------------------------------------------- #
+_FOLLOWUP_RULES = [
+    # (category, phrases) — checked in order, first match wins, so more
+    # specific/decisive signals (Cold, Hot) are listed before soft stalls.
+    ("Cold", (
+        "not interested", "not intrested", "nahi chahiye", "nhi chahiye",
+        "no thanks", "not needed", "no need", "not required",
+    )),
+    ("Hot", (
+        "pay now", "buy now", "make payment", "checkout", "enroll now",
+        "enrol now", "i want to join", "i want to enroll", "ready to pay",
+    )),
+    ("Parent", (
+        "ask my parents", "ask parents", "ask my mom", "ask my dad",
+        "talk to my parents", "need to ask parents", "parents ko puchna",
+        "mummy papa", "mumma papa", "papa se puchna", "mummy se puchna",
+        "guardian ki permission", "family se baat",
+    )),
+    ("Budget", (
+        "too expensive", "very expensive", "bahut mehenga", "bahut mehnga",
+        "can't afford", "cant afford", "no money", "not affordable",
+        "high fees", "kam paise", "paise nahi hai", "mehenga hai",
+        "koi discount", "discount hai kya",
+    )),
+    ("Need Call", (
+        "call me", "please call", "mujhe call karo", "call karo",
+        "callback", "call back",
+    )),
+    ("Need Demo", (
+        "send details", "send info", "send information", "share details",
+        "demo chahiye", "free demo", "trial class", "demo class",
+    )),
+    ("Certificate", (
+        "need certificate", "certificate chahiye", "certificate milega",
+    )),
+    ("Already Working", (
+        "already working", "i have a job", "already job kar raha",
+        "already employed", "job kar rahi hu", "job kar raha hu",
+    )),
+    ("Busy", (
+        "busy", "abhi busy hu", "no time right now", "not free right now",
+        "abhi time nahi", "busy hu abhi",
+    )),
+    ("Thinking", (
+        "i'll tell tomorrow", "ill tell tomorrow", "tell tomorrow",
+        "kal bataunga", "kal batati hu", "kal bataungi", "let me think",
+        "will think", "thinking about it", "soch raha hu", "soch rahi hu",
+        "need time", "need some time", "give me time", "abhi decide nahi",
+    )),
+]
+
+
+def _detect_followup_signal(text_l: str):
+    """Scan a lowercased message for the first matching follow-up signal.
+    Returns (category, matched_phrase) or (None, None)."""
+    for category, phrases in _FOLLOWUP_RULES:
+        for phrase in phrases:
+            if phrase in text_l:
+                return category, phrase
+    return None, None
+
+
+def _apply_followup_category(sess, category):
+    """Stamp the lead's session tags with a single fu_<category> marker,
+    replacing any earlier one — a follow-up signal is a snapshot of the
+    lead's latest posture, not a running tally. Piggybacks on the same
+    "tags" set that already feeds the Tags column via _update_lead_progress
+    / _save_lead, so no extra sheet write path is introduced."""
+    sess["tags"] = {t for t in sess.get("tags", set()) if not str(t).startswith("fu_")}
+    sess["tags"].add(f"fu_{category.lower().replace(' ', '_')}")
+    sess["followup_category"] = category
+
+
+@safe(default=None, label="bot._track_followup_signal")
+def _track_followup_signal(phone, sess, text):
+    """Runs silently in the background on every inbound message — never
+    sends a reply itself and never affects which reply the rest of the
+    pipeline sends (requirement: never interfere with AI replies)."""
+    text_l = (text or "").strip().lower()
+    if not text_l:
+        return
+    category, phrase = _detect_followup_signal(text_l)
+    if not category:
+        return
+
+    _apply_followup_category(sess, category)
+    sess["followup_reason"] = phrase
+
+    # An explicit "not interested" should also stop the follow-up cadence
+    # outright (same mechanism already used for Converted leads), not just
+    # get logged as a category.
+    if category == "Cold":
+        sess["stage"] = STAGE_NOT_INTERESTED
+
+    # Log a short audit trail on the lead only once it actually exists as a
+    # sheet row; pre-save signals are still captured via sess["tags"] and
+    # will land on the row the moment _save_lead runs.
+    if sess.get("saved"):
+        try:
+            crm.add_note(phone, f'Follow-up signal: "{phrase}" -> {category}')
+        except Exception:
+            log.exception("bot: failed to log follow-up note for %s", phone)
 
 
 # --------------------------------------------------------------------------- #
@@ -259,6 +551,12 @@ def _enroll_message(sess):
 def _best_faq(intents, sess):
     for intent in _FAQ_PRIORITY:
         if intent in intents:
+            if intent == "acknowledge":
+                return intent, _varied(sess, _lang(sess), _ACK_VARIANTS)
+            if intent == "farewell":
+                return intent, _varied(sess, _lang(sess), _FAREWELL_VARIANTS)
+            if intent == "thanks":
+                return intent, _varied(sess, _lang(sess), _THANKS_VARIANTS)
             ans = faq_answer(intent, _lang(sess))
             if ans:
                 return intent, ans
@@ -302,15 +600,7 @@ def _fallback_response(phone, sess):
         return
 
     lang = _lang(sess)
-    if lang == "Hindi":
-        msg = ("मुझे इसका पक्का जवाब नहीं पता 🙏 चाहें तो counsellor से connect करवा दूँ, "
-               "या price/syllabus/certificate के बारे में पूछिए।")
-    elif lang == "Hinglish":
-        msg = ("Mujhe iska exact jawab nahi pata 🙏 chaho toh counsellor se connect karva doon, "
-               "ya price/syllabus/certificate ke baare mein poochho.")
-    else:
-        msg = ("I'm not fully confident on that one 🙏 I can connect you with our counsellor, "
-               "or you can ask me about price, syllabus, or the certificate.")
+    msg = _varied(sess, lang, _FALLBACK_VARIANTS)
     _send(phone, sess, msg)
 
 
@@ -523,6 +813,7 @@ def _dispatch(phone, sess, text, wa_name):
         sess["score"] += gained
     _tag(sess, intents)
     _track_topic(sess, intents)
+    _track_followup_signal(phone, sess, text)
 
     # Explicit human/counsellor request at any point.
     if "human" in intents:
@@ -553,9 +844,15 @@ def _dispatch(phone, sess, text, wa_name):
 
     # ---------------- Onboarding ----------------
     if step == 1:
-        # First-ever message: greet + ask name. Answer an opening question too.
+        # First-ever message: greet + ask name. Answer an opening question too
+        # -- but a plain "Hi"/"Hello"/emoji with nothing else to answer should
+        # only get ONE welcome, not a greeting-FAQ reply stacked on top of it.
         if not sess["name"] and len(sess["history"]) == 1:
-            _answer_or_reprompt(phone, sess, intents, _welcome(sess), text)
+            substantive = intents - {"greeting", "small_talk", "acknowledge"}
+            if not substantive:
+                _send(phone, sess, _welcome(sess))
+            else:
+                _answer_or_reprompt(phone, sess, intents, _welcome(sess), text)
             return
         sess["name"] = text
         sess["step"] = 2
