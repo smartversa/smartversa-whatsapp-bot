@@ -31,8 +31,9 @@ import sheets
 import crm
 import ai
 from knowledge import (
-    COURSES, course_by_choice, detect_intents, score_for,
+    COURSES, course_by_choice, detect_intents, detect_intents_smart, score_for,
     faq_answer, detect_language, recommend_course,
+    objection_subtype, objection_answer, detect_background, detect_goal,
 )
 
 # phone -> session dict
@@ -55,10 +56,15 @@ PAYMENT_LINK_SENT = "Link Sent"
 # course-detail answers and guided recommendation), so they're excluded here.
 # "human", "payment" (stage-changing) and "restart" are handled explicitly.
 _FAQ_PRIORITY = [
-    "payment", "price", "certificate", "internship", "placement", "refund",
-    "duration", "timing", "prerequisite", "about", "support", "projects",
-    "stream_eligibility", "device_requirement", "assignments", "demo",
-    "experienced", "beginner_doubt", "parents", "objection", "after_payment",
+    "payment_failure", "payment", "price", "emi", "discount", "scholarship",
+    "certificate", "certificate_value", "internship", "offer_letter",
+    "placement", "career_outcomes", "salary", "freelancing", "higher_studies",
+    "resume", "linkedin", "portfolio", "interview", "mentors",
+    "refund", "duration", "timing", "batch_size", "enrollment_process",
+    "prerequisite", "trust", "msme", "about", "support", "doubts", "notes",
+    "projects", "tools_query", "stream_eligibility", "audience_fit",
+    "device_requirement", "assignments", "demo", "experienced",
+    "beginner_doubt", "parents", "objection", "after_payment",
     "small_talk", "greeting", "thanks", "acknowledge", "farewell",
 ]
 
@@ -143,6 +149,10 @@ _TYPO_FIXES = {
     "placment": "placement", "placemnt": "placement", "plasment": "placement",
     "pyhton": "python", "digitel": "digital", "sylabus": "syllabus",
     "syllabuss": "syllabus", "projekt": "project",
+    "linkdin": "linkedin", "linkedn": "linkedin", "resme": "resume", "resum": "resume",
+    "scholorship": "scholarship", "scholorshp": "scholarship", "schlorship": "scholarship",
+    "discont": "discount", "discoutn": "discount", "emii": "emi",
+    "geniune": "genuine", "geuinue": "genuine", "regd": "registered",
 }
 
 
@@ -338,6 +348,8 @@ def _new_session(wa_name, first_text):
         "reco_recommendation": "",
         "followup_category": "",  # last detected follow-up signal category (Phase 4)
         "followup_reason": "",    # phrase that triggered it
+        "background": "",         # multi-turn memory: commerce/arts/science/bca/mba
+        "goal": "",                # multi-turn memory: job/freelancing/higher_studies/business
     }
 
 
@@ -381,6 +393,20 @@ def _tag(sess, intents):
     for i in intents:
         if i in ("price", "certificate", "payment", "internship", "placement", "syllabus"):
             sess["tags"].add(i)
+
+
+def _track_background_goal(sess, text):
+    """Multi-turn memory: once a student mentions their academic background
+    (commerce/arts/science/...) or their goal (job/freelancing/...) anywhere
+    in the chat, remember it for the rest of the conversation so later
+    questions ('Can I learn Python?') can be answered/recommended in context
+    without re-asking."""
+    bg = detect_background(text)
+    if bg and not sess.get("background"):
+        sess["background"] = bg
+    goal = detect_goal(text)
+    if goal and not sess.get("goal"):
+        sess["goal"] = goal
 
 
 # --------------------------------------------------------------------------- #
@@ -548,7 +574,7 @@ def _enroll_message(sess):
     return f"🎉 Enroll here:\n{Config.PAYMENT_URL}\n\nTell me if you need any help!"
 
 
-def _best_faq(intents, sess):
+def _best_faq(intents, sess, text=""):
     for intent in _FAQ_PRIORITY:
         if intent in intents:
             if intent == "acknowledge":
@@ -557,6 +583,14 @@ def _best_faq(intents, sess):
                 return intent, _varied(sess, _lang(sess), _FAREWELL_VARIANTS)
             if intent == "thanks":
                 return intent, _varied(sess, _lang(sess), _THANKS_VARIANTS)
+            if intent == "objection":
+                # Give a tailored reply for *why* they're objecting when we
+                # can tell (too expensive / need parents' okay / need time /
+                # already learning elsewhere), else the generic objection FAQ.
+                sub = objection_subtype(text)
+                tailored = objection_answer(sub, _lang(sess)) if sub else ""
+                if tailored:
+                    return intent, tailored
             ans = faq_answer(intent, _lang(sess))
             if ans:
                 return intent, ans
@@ -627,7 +661,7 @@ def _continue_recommendation(phone, sess, text):
     key = _classify_track(sess["reco_answers"].get(3, ""))
     if not key:
         blob = " ".join(sess["reco_answers"].values())
-        key = recommend_course(blob)
+        key = recommend_course(blob, sess.get("background", ""), sess.get("goal", ""))
 
     sess["reco_stage"] = "done"
     sess["reco_recommendation"] = key
@@ -738,7 +772,8 @@ def _ai_reply(sess, text):
         return None
     return ai.reply(
         memory={"name": sess.get("name"), "language": sess.get("language"),
-                "interest": sess.get("interest")},
+                "interest": sess.get("interest"), "background": sess.get("background"),
+                "goal": sess.get("goal")},
         history=sess.get("history", []),
         user_text=text,
     )
@@ -758,7 +793,7 @@ def _answer_or_reprompt(phone, sess, intents, prompt, text=""):
     if ai_text:
         _send(phone, sess, ai_text)
     else:
-        _, ans = _best_faq(intents, sess)
+        _, ans = _best_faq(intents, sess, text)
         if ans:
             _send(phone, sess, ans)
     _send(phone, sess, prompt)
@@ -807,13 +842,14 @@ def _dispatch(phone, sess, text, wa_name):
         _send(phone, _sessions[phone], _welcome(_sessions[phone]))
         return
 
-    intents = detect_intents(_normalize_for_intent(text))
+    intents = detect_intents_smart(_normalize_for_intent(text))
     gained = score_for(intents)
     if gained:
         sess["score"] += gained
     _tag(sess, intents)
     _track_topic(sess, intents)
     _track_followup_signal(phone, sess, text)
+    _track_background_goal(sess, text)
 
     # Explicit human/counsellor request at any point.
     if "human" in intents:
@@ -935,7 +971,7 @@ def _open_conversation(phone, sess, text, intents):
         return
 
     # Rule-based fallback: answer FAQ, guide to a recommendation, or hand off.
-    _, ans = _best_faq(intents, sess)
+    _, ans = _best_faq(intents, sess, text)
     if ans:
         _send(phone, sess, ans)
         return

@@ -237,6 +237,85 @@ INTENT_KEYWORDS = {
     "thanks":      ["thanks", "thank you", "thnx", "shukriya", "dhanyawad"],
     "acknowledge": ["okay", "fine", "alright", "acha", "theek hai", "sahi hai"],
     "farewell":    ["bye", "goodbye", "see you", "tata", "milte hain", "chalta hoon"],
+
+    # ---------------------------------------------------------------- #
+    # Trust / legitimacy / legal
+    # ---------------------------------------------------------------- #
+    "trust": ["real company", "fake company", "is this real", "is this fake", "scam",
+              "fraud", "trustworthy", "trust worthy", "can i trust", "genuine company",
+              "genuine hai", "asli hai", "nakli hai", "legit company", "is it legit",
+              "is it legal", "legal hai", "registered company", "company registered hai",
+              "govt registered", "government registered", "authorised", "authorized",
+              "recognised", "recognized", "valid company", "reliable company",
+              "bharosemand", "bharosa", "yakeen", "sach me", "sachi company",
+              "kya ye sahi hai", "safe hai kya", "is this safe", "trust kar sakte",
+              "trust kar sakte hain", "is smartversa real", "is smartversa fake",
+              "smartversa fraud", "smartversa scam", "smartversa legit"],
+    "msme": ["msme", "msme registered", "msme certificate", "udyam", "udyam registration",
+             "gst registered", "company registration number", "cin number", "registration number"],
+
+    "certificate_value": ["certificate valid hai", "certificate valid", "certificate kaam ayega",
+             "certificate ki value", "certificate recognised", "certificate recognized",
+             "certificate accepted", "certificate govt approved", "iso certificate",
+             "ugc approved", "aicte approved", "university recognised", "certificate use hoga",
+             "will this certificate help", "does certificate matter", "certificate ka fayda"],
+
+    "linkedin": ["linkedin", "linkedin optimization", "linkedin profile", "linkedin banwao",
+                 "linkedin help", "linkedin update"],
+    "resume": ["resume", "cv banwana", "resume banwana", "resume review", "cv review",
+               "resume banao", "cv chahiye", "resume help", "resume kaise banaye"],
+    "portfolio": ["portfolio", "portfolio banwana", "portfolio chahiye", "project portfolio",
+                  "github portfolio", "showcase projects"],
+    "interview": ["interview", "interview prep", "interview preparation", "mock interview",
+                  "interview tips", "interview ready", "interview ke liye"],
+    "mentors": ["mentor", "mentors", "mentorship", "guide karega kaun", "trainer kaun hai",
+                "trainer", "instructor", "teacher", "faculty", "kaun sikhayega",
+                "who will teach"],
+
+    "emi": ["emi", "installment", "installments", "kist", "kisto me", "monthly payment",
+            "pay in parts", "part payment", "split payment"],
+    "discount": ["discount", "koi discount", "any discount", "offer chal raha", "coupon",
+                 "coupon code", "promo code", "sasta", "kam price", "price kam karo",
+                 "less price", "reduce price", "special offer"],
+    "scholarship": ["scholarship", "scholarship hai kya", "fee waiver", "free seat",
+                     "financial help", "financial assistance"],
+
+    "audience_fit": ["working professional", "job kar raha", "job kar rahi", "housewife",
+                      "gharelu mahila", "gap year", "gap year hai", "fresher", "freshers",
+                      "abhi graduate hua", "abhi graduate hui", "college student",
+                      "school student", "12th ke baad", "graduate ke baad", "mba student",
+                      "mba se hu", "mba se hoon", "part time karna hai", "full time job ke saath"],
+
+    "career_outcomes": ["career", "career growth", "future scope", "scope in ai",
+                         "scope in digital marketing", "roadmap", "career roadmap",
+                         "job scope", "future me kya", "growth potential", "career options",
+                         "kya banoge", "kya ban sakte", "which career", "career path"],
+    "freelancing": ["freelance", "freelancing", "freelancer", "work from home",
+                     "apna kaam", "own clients", "client lena"],
+    "higher_studies": ["higher studies", "further studies", "masters", "abroad studies",
+                        "study abroad", "ms karna hai", "phd", "further education"],
+    "salary": ["salary", "package", "in hand salary", "starting salary", "kitni salary",
+               "average package", "ctc"],
+
+    "enrollment_process": ["how to enroll", "enrollment process", "admission process",
+                            "how to join", "how to register", "registration process",
+                            "batch start date", "next batch", "batch kab start",
+                            "joining process", "kaise join karu", "kaise enroll karu"],
+    "payment_failure": ["payment failed", "payment fail", "payment nahi hua", "paisa kat gaya",
+                         "money deducted", "transaction failed", "payment error",
+                         "payment issue", "payment problem", "paisa deduct ho gaya"],
+    "offer_letter": ["offer letter", "internship letter", "appointment letter",
+                      "joining letter", "experience letter milega"],
+
+    "notes": ["notes", "study material", "pdf notes", "reading material", "notes milenge"],
+    "doubts": ["doubt clearing", "doubt session", "ask doubts", "who clears doubts",
+               "how to ask doubts", "query resolution"],
+    "batch_size": ["batch size", "kitne students", "group size", "class strength"],
+
+    "tools_query": ["power bi", "sql", "excel", "python course", "machine learning",
+                    "ml", "data science", "seo", "meta ads", "google ads", "analytics tool",
+                    "which tools", "what tools", "which software", "kaunse tools",
+                    "kaunsa software"],
 }
 
 # Scoring per the brief — reflects buying intent strength
@@ -251,6 +330,17 @@ INTENT_SCORE = {
     "comparison": 5,
     "projects": 5,
     "experienced": 5,
+    "enrollment_process": 20,
+    "payment_failure": 30,
+    "emi": 15,
+    "discount": 10,
+    "scholarship": 10,
+    "trust": 5,
+    "career_outcomes": 8,
+    "salary": 8,
+    "resume": 5,
+    "linkedin": 5,
+    "interview": 5,
 }
 
 
@@ -511,6 +601,222 @@ def faq_answer(intent: str, language: str) -> str:
             "Hindi":   "👋 बात करने के लिए धन्यवाद! जब चाहें फिर से संपर्क करें — आपका दिन शुभ हो!",
             "Hinglish":"👋 Chat karne ke liye thanks! Jab bhi chaho phir se contact karo — have a great day!",
         },
+        "trust": {
+            "English": (f"🛡️ Fair question! *{COMPANY['name']}* is an {COMPANY['registration']}, based in "
+                        f"{COMPANY['location']} ({COMPANY['website']}). Every enrolled student gets a certificate, "
+                        "real projects, and an internship — and our support team is reachable anytime if you need proof "
+                        f"or have questions ({COMPANY['whatsapp_support']})."),
+            "Hindi":   (f"🛡️ अच्छा सवाल! *{COMPANY['name']}* एक {COMPANY['registration']} है, {COMPANY['location']} में based "
+                        f"({COMPANY['website']})। हर student को certificate, real projects और internship मिलती है — "
+                        f"कोई भी doubt हो तो support team से बात कर सकते हैं ({COMPANY['whatsapp_support']})।"),
+            "Hinglish":(f"🛡️ Achha sawaal! *{COMPANY['name']}* ek {COMPANY['registration']} hai, {COMPANY['location']} mein based "
+                        f"({COMPANY['website']}). Har student ko certificate, real projects aur internship milti hai — "
+                        f"koi bhi doubt ho toh support team se baat kar sakte ho ({COMPANY['whatsapp_support']})."),
+        },
+        "msme": {
+            "English": (f"📋 Yes — {COMPANY['name']} is an {COMPANY['registration']}. If you'd like, I can connect you "
+                        "with our team for further verification details."),
+            "Hindi":   (f"📋 हाँ — {COMPANY['name']} एक {COMPANY['registration']} है। चाहें तो verification details के लिए "
+                        "team से connect करवा सकता हूँ।"),
+            "Hinglish":(f"📋 Haan — {COMPANY['name']} ek {COMPANY['registration']} hai. Chaho toh verification details ke "
+                        "liye team se connect karva sakta hoon."),
+        },
+        "certificate_value": {
+            "English": ("🏅 The certificate is issued by SmartVersa on successful completion, backed by real projects "
+                        "and an internship on your profile — which is what most recruiters actually look for alongside "
+                        "a certificate. I don't have confirmed details on external accreditation bodies (UGC/AICTE etc.) "
+                        "— happy to connect you with a counsellor for that specific detail."),
+            "Hindi":   ("🏅 Certificate SmartVersa की तरफ से course पूरा करने पर मिलता है, साथ में real projects और "
+                        "internship भी profile में जुड़ते हैं — यही recruiters ज़्यादा देखते हैं। External accreditation "
+                        "(UGC/AICTE) की confirmed detail नहीं है — counsellor से पूछ सकते हैं।"),
+            "Hinglish":("🏅 Certificate SmartVersa ki taraf se course complete karne par milta hai, saath mein real "
+                        "projects aur internship bhi profile mein judte hain — yehi recruiters zyada dekhte hain. "
+                        "External accreditation (UGC/AICTE) ki confirmed detail nahi hai — counsellor se pooch sakte ho."),
+        },
+        "linkedin": {
+            "English": "💼 LinkedIn optimization is part of our placement support — we help you present your projects, certificate, and internship the right way on your profile.",
+            "Hindi":   "💼 LinkedIn optimization हमारे placement support का हिस्सा है — projects, certificate और internship को सही तरीके से profile पर दिखाने में मदद करते हैं।",
+            "Hinglish":"💼 LinkedIn optimization hamare placement support ka hissa hai — projects, certificate aur internship ko sahi tarike se profile pe dikhane mein help karte hain.",
+        },
+        "resume": {
+            "English": "📄 Resume building and review is included in our placement support, so your projects, internship, and certificate come across clearly to recruiters.",
+            "Hindi":   "📄 Resume building और review हमारे placement support में शामिल है, जिससे आपके projects, internship और certificate recruiters तक अच्छे से पहुंचें।",
+            "Hinglish":"📄 Resume building aur review hamare placement support mein included hai, jisse aapke projects, internship aur certificate recruiters tak achhe se pahunchein.",
+        },
+        "portfolio": {
+            "English": ("🗂️ Your portfolio comes from the real projects you build during the course — "
+                        "you'll have hands-on work to show, not just a certificate."),
+            "Hindi":   "🗂️ आपका portfolio course के real projects से बनता है — सिर्फ certificate नहीं, दिखाने के लिए actual काम भी होगा।",
+            "Hinglish":"🗂️ Aapka portfolio course ke real projects se banta hai — sirf certificate nahi, dikhane ke liye actual kaam bhi hoga.",
+        },
+        "interview": {
+            "English": "🎤 Interview preparation is part of our placement support, alongside resume building, LinkedIn optimization, and career guidance.",
+            "Hindi":   "🎤 Interview preparation हमारे placement support का हिस्सा है, साथ में resume building, LinkedIn optimization और career guidance भी।",
+            "Hinglish":"🎤 Interview preparation hamare placement support ka hissa hai, saath mein resume building, LinkedIn optimization aur career guidance bhi.",
+        },
+        "mentors": {
+            "English": ("🧑‍🏫 You're guided through structured recorded lessons, real projects, and support from our team "
+                        "for doubts. I don't have confirmed details on 1:1 mentor assignment — I can check with a "
+                        "counsellor if that matters to you."),
+            "Hindi":   ("🧑‍🏫 आपको structured recorded lessons, real projects, और doubts के लिए team support मिलता है। "
+                        "1:1 mentor assignment की confirmed detail नहीं है — चाहें तो counsellor से पूछ सकता हूँ।"),
+            "Hinglish":("🧑‍🏫 Aapko structured recorded lessons, real projects, aur doubts ke liye team support milta "
+                        "hai. 1:1 mentor assignment ki confirmed detail nahi hai — chaho toh counsellor se pooch sakta hoon."),
+        },
+        "emi": {
+            "English": ("💳 I don't have confirmed EMI/installment details right now — payment is currently via a "
+                        "single secure Razorpay transaction. I can connect you with our team to check if part-payment "
+                        "is possible for your case."),
+            "Hindi":   ("💳 EMI/installment की confirmed detail अभी मेरे पास नहीं है — payment अभी single Razorpay "
+                        "transaction से होती है। चाहें तो team से पूछ के बताता हूँ।"),
+            "Hinglish":("💳 EMI/installment ki confirmed detail abhi mere paas nahi hai — payment abhi single Razorpay "
+                        "transaction se hoti hai. Chaho toh team se pooch ke batata hoon."),
+        },
+        "discount": {
+            "English": ("🏷️ The listed price (GST included) is our standard fee. I don't "
+                        "have any confirmed discount/coupon running right now — I can connect you with our counsellor "
+                        "to check if anything's available."),
+            "Hindi":   ("🏷️ Listed price ही हमारी standard fee है (GST included)। अभी कोई confirmed discount/coupon "
+                        "नहीं है — counsellor से check करवा सकता हूँ।"),
+            "Hinglish":("🏷️ Listed price hi hamari standard fee hai (GST included). Abhi koi confirmed discount/coupon "
+                        "nahi hai — counsellor se check karva sakta hoon."),
+        },
+        "scholarship": {
+            "English": ("🎓 I don't have confirmed details on a scholarship or fee-waiver program right now. "
+                        "I can connect you with our counsellor to check if you qualify for anything."),
+            "Hindi":   ("🎓 Scholarship/fee-waiver की confirmed detail अभी मेरे पास नहीं है। चाहें तो counsellor से "
+                        "check करवा दूँ।"),
+            "Hinglish":("🎓 Scholarship/fee-waiver ki confirmed detail abhi mere paas nahi hai. Chaho toh counsellor "
+                        "se check karva doon."),
+        },
+        "audience_fit": {
+            "English": ("🙌 Both programs work well whether you're a student, working professional, homemaker, fresher, "
+                        "or on a gap year — everything is recorded and self-paced, so you learn on your own schedule "
+                        "with no fixed class timings to juggle."),
+            "Hindi":   ("🙌 दोनों programs हर किसी के लिए ठीक हैं — student, working professional, homemaker, fresher, "
+                        "या gap year पर हों। सब कुछ recorded और self-paced है, अपनी schedule से पढ़ सकते हैं।"),
+            "Hinglish":("🙌 Dono programs har kisi ke liye theek hain — student, working professional, homemaker, "
+                        "fresher, ya gap year pe ho. Sab kuch recorded aur self-paced hai, apni schedule se padh sakte ho."),
+        },
+        "career_outcomes": {
+            "English": ("🚀 AI & Data Science can lead toward roles like Data Analyst or BI Analyst; Digital Marketing "
+                        "can lead toward Social Media Manager, Digital Marketer, or freelance marketing work. Both "
+                        "fields are growing fast in India. We support your job-readiness with resume, LinkedIn, and "
+                        "interview prep — final placement isn't guaranteed, but you finish genuinely equipped."),
+            "Hindi":   ("🚀 AI & Data Science से Data Analyst / BI Analyst जैसे roles मिल सकते हैं; Digital Marketing से "
+                        "Social Media Manager, Digital Marketer, या freelance work। दोनों fields India में तेज़ी से grow "
+                        "कर रही हैं। हम resume, LinkedIn, interview prep में मदद करते हैं — guaranteed placement नहीं, "
+                        "पर आप job-ready ज़रूर बनते हैं।"),
+            "Hinglish":("🚀 AI & Data Science se Data Analyst / BI Analyst jaise roles mil sakte hain; Digital Marketing "
+                        "se Social Media Manager, Digital Marketer, ya freelance work. Dono fields India mein tezi se "
+                        "grow kar rahi hain. Hum resume, LinkedIn, interview prep mein madad karte hain — guaranteed "
+                        "placement nahi, par aap job-ready zaroor bante ho."),
+        },
+        "freelancing": {
+            "English": ("🧳 Both tracks are freelance-friendly — Digital Marketing especially, since Meta Ads, SEO, and "
+                        "content skills are in direct demand from small businesses; AI & Data Science also opens up "
+                        "freelance data-analysis work with the right portfolio."),
+            "Hindi":   ("🧳 दोनों tracks freelancing के लिए अच्छे हैं — खासकर Digital Marketing, क्योंकि Meta Ads, SEO, "
+                        "content skills की demand direct रहती है; AI & Data Science में भी portfolio के साथ freelance "
+                        "data work मिल सकता है।"),
+            "Hinglish":("🧳 Dono tracks freelancing ke liye achhe hain — khaaskar Digital Marketing, kyunki Meta Ads, "
+                        "SEO, content skills ki demand direct rehti hai; AI & Data Science mein bhi portfolio ke saath "
+                        "freelance data work mil sakta hai."),
+        },
+        "higher_studies": {
+            "English": ("🎓 Both programs give you a practical head start (real projects + fundamentals) that pairs "
+                        "well alongside or before higher studies — they're not a replacement for a degree, but a "
+                        "practical skill layer on top of it."),
+            "Hindi":   ("🎓 दोनों programs practical head start देते हैं (real projects + fundamentals) जो higher studies "
+                        "के साथ या पहले भी मददगार हैं — यह degree का replacement नहीं, बल्कि उसके ऊपर practical skill है।"),
+            "Hinglish":("🎓 Dono programs practical head start dete hain (real projects + fundamentals) jo higher "
+                        "studies ke saath ya pehle bhi madadgar hain — yeh degree ka replacement nahi, balki uske "
+                        "upar practical skill hai."),
+        },
+        "salary": {
+            "English": ("💰 I don't have confirmed average salary figures to share — they vary by role, company, and "
+                        "location. What I can say is both tracks build toward genuinely in-demand roles, and we support "
+                        "you with resume, LinkedIn, and interview prep to help you negotiate well."),
+            "Hindi":   ("💰 Confirmed average salary figures मेरे पास नहीं हैं — role, company, location पर depend करता "
+                        "है। पर दोनों tracks in-demand roles की तरफ ले जाते हैं, और हम resume/LinkedIn/interview prep "
+                        "में मदद करते हैं।"),
+            "Hinglish":("💰 Confirmed average salary figures mere paas nahi hain — role, company, location pe depend "
+                        "karta hai. Par dono tracks in-demand roles ki taraf le jaate hain, aur hum resume/LinkedIn/"
+                        "interview prep mein madad karte hain."),
+        },
+        "enrollment_process": {
+            "English": (f"📝 Enrollment is simple: pick your program, pay securely via Razorpay (GST included) here:\n"
+                        f"{Config.PAYMENT_URL}\nOur team then reaches out to guide your next steps. There are no fixed "
+                        "batch start dates since everything is self-paced — you can begin as soon as you enroll."),
+            "Hindi":   (f"📝 Enrollment simple है: program choose करें, Razorpay से secure payment करें (GST included):\n"
+                        f"{Config.PAYMENT_URL}\nफिर हमारी team next steps के लिए guide करेगी। कोई fixed batch date "
+                        "नहीं है — enroll करते ही start कर सकते हैं।"),
+            "Hinglish":(f"📝 Enrollment simple hai: program choose karo, Razorpay se secure payment karo (GST included):\n"
+                        f"{Config.PAYMENT_URL}\nPhir hamari team next steps ke liye guide karegi. Koi fixed batch "
+                        "date nahi hai — enroll karte hi start kar sakte ho."),
+        },
+        "payment_failure": {
+            "English": (f"⚠️ Sorry to hear that. If money was deducted but the payment shows as failed, it's usually "
+                        f"auto-reversed by the bank/Razorpay within a few days. Please share a screenshot with our "
+                        f"support team — 📱 WhatsApp {COMPANY['whatsapp_support']} or 📧 {COMPANY['support_email']} — "
+                        f"so we can check and confirm your enrollment right away."),
+            "Hindi":   (f"⚠️ Sorry to hear that. अगर पैसा कट गया पर payment failed दिखा रहा है, तो अक्सर bank/Razorpay "
+                        f"कुछ दिनों में auto-reverse कर देता है। Screenshot हमारी support team को भेजें — "
+                        f"📱 WhatsApp {COMPANY['whatsapp_support']} या 📧 {COMPANY['support_email']} — ताकि हम check "
+                        "करके enrollment confirm कर सकें।"),
+            "Hinglish":(f"⚠️ Sorry to hear that. Agar paisa kat gaya par payment failed dikha raha hai, toh aksar "
+                        f"bank/Razorpay kuch dino mein auto-reverse kar deta hai. Screenshot hamari support team ko "
+                        f"bhejo — 📱 WhatsApp {COMPANY['whatsapp_support']} ya 📧 {COMPANY['support_email']} — taaki "
+                        "hum check karke enrollment confirm kar sakein."),
+        },
+        "offer_letter": {
+            "English": ("📜 Both programs include a genuine internship alongside real projects, giving you actual "
+                        "work experience for your resume. I don't have confirmed specifics on the exact letter/document "
+                        "format — I can connect you with a counsellor for that detail."),
+            "Hindi":   ("📜 दोनों programs में genuine internship है, real projects के साथ — resume के लिए actual "
+                        "experience मिलता है। Exact letter/document format की confirmed detail नहीं है — counsellor से "
+                        "पूछ सकता हूँ।"),
+            "Hinglish":("📜 Dono programs mein genuine internship hai, real projects ke saath — resume ke liye actual "
+                        "experience milta hai. Exact letter/document format ki confirmed detail nahi hai — counsellor "
+                        "se pooch sakta hoon."),
+        },
+        "notes": {
+            "English": ("📒 Learning is built around recorded video lessons and real projects. I don't have confirmed "
+                        "details on separate downloadable notes/PDFs — happy to check with a counsellor if that's "
+                        "important to you."),
+            "Hindi":   ("📒 Learning recorded video lessons और real projects पर based है। Separate downloadable "
+                        "notes/PDFs की confirmed detail नहीं है — counsellor से पूछ सकता हूँ।"),
+            "Hinglish":("📒 Learning recorded video lessons aur real projects par based hai. Separate downloadable "
+                        "notes/PDFs ki confirmed detail nahi hai — counsellor se pooch sakta hoon."),
+        },
+        "doubts": {
+            "English": ("❓ You can reach our support team for doubts anytime — "
+                        f"📱 WhatsApp {COMPANY['whatsapp_support']} or 📧 {COMPANY['support_email']} "
+                        f"({COMPANY['support_hours']})."),
+            "Hindi":   ("❓ Doubts के लिए हमारी support team से कभी भी संपर्क कर सकते हैं — "
+                        f"📱 WhatsApp {COMPANY['whatsapp_support']} या 📧 {COMPANY['support_email']} "
+                        f"({COMPANY['support_hours']})।"),
+            "Hinglish":("❓ Doubts ke liye hamari support team se kabhi bhi contact kar sakte ho — "
+                        f"📱 WhatsApp {COMPANY['whatsapp_support']} ya 📧 {COMPANY['support_email']} "
+                        f"({COMPANY['support_hours']})."),
+        },
+        "batch_size": {
+            "English": ("👥 Since classes are self-paced recorded videos (not live cohorts), there isn't a fixed "
+                        "batch/class size to speak of — you learn independently, with support available whenever "
+                        "you need it."),
+            "Hindi":   ("👥 Classes self-paced recorded videos हैं (live cohort नहीं), इसलिए fixed batch/class size "
+                        "जैसी कोई चीज़ नहीं है — आप independently सीखते हैं, ज़रूरत पर support मिलता है।"),
+            "Hinglish":("👥 Classes self-paced recorded videos hain (live cohort nahi), isliye fixed batch/class size "
+                        "jaisi koi cheez nahi hai — aap independently seekhte ho, zaroorat par support milta hai."),
+        },
+        "tools_query": {
+            "English": ("🛠️ AI & Data Science covers: " + ", ".join(ai["tools"]) +
+                        ".\nDigital Marketing covers: " + ", ".join(dm["tools"]) + "."),
+            "Hindi":   ("🛠️ AI & Data Science में: " + ", ".join(ai["tools"]) +
+                        "।\nDigital Marketing में: " + ", ".join(dm["tools"]) + "।"),
+            "Hinglish":("🛠️ AI & Data Science mein: " + ", ".join(ai["tools"]) +
+                        ".\nDigital Marketing mein: " + ", ".join(dm["tools"]) + "."),
+        },
     }
 
     entry = table.get(intent)
@@ -522,15 +828,219 @@ def faq_answer(intent: str, language: str) -> str:
 # --------------------------------------------------------------------------- #
 # Course recommendation heuristic
 # --------------------------------------------------------------------------- #
-def recommend_course(text: str) -> str:
-    t = (text or "").lower()
+def recommend_course(text: str, background: str = "", goal: str = "") -> str:
+    """Contextual recommendation. `text` is the free-form signal (kept for
+    backward compatibility with existing callers); `background` and `goal`
+    are optional extra context (e.g. 'commerce', 'job') a caller may already
+    know from earlier in the conversation, for a sharper recommendation."""
+    t = " ".join([text or "", background or "", goal or ""]).lower()
     technical = any(w in t for w in
-                    ["data", "python", "coding", "analyst", "sql", "analytics", "ai", "machine"])
+                    ["data", "python", "coding", "analyst", "sql", "analytics", "ai", "machine",
+                     "power bi", "excel", "science", "bca", "engineering"])
     marketing = any(w in t for w in
-                    ["marketing", "social", "instagram", "ads", "freelanc", "business", "content", "brand"])
+                    ["marketing", "social", "instagram", "ads", "freelanc", "business", "content",
+                     "brand", "seo", "arts", "commerce"])
     if technical and not marketing:
         return "1"
     if marketing and not technical:
         return "2"
     # Beginner with no clear technical signal -> Digital Marketing (lower barrier)
     return "2"
+
+
+# --------------------------------------------------------------------------- #
+# Objection sub-typing
+# --------------------------------------------------------------------------- #
+OBJECTION_KEYWORDS = {
+    "expensive":        ["expensive", "mehenga", "mehnga", "costly", "high price", "kam karo",
+                          "afford nahi", "cant afford", "can't afford", "budget nahi"],
+    "parents_permission":["parents permission", "ask parents", "parents ki permission",
+                          "parents allow", "mom dad permission", "ghar walo se puchna",
+                          "family permission"],
+    "need_time":        ["need time", "time chahiye", "abhi nahi", "not now", "busy hu",
+                          "will decide later", "baad me"],
+    "thinking":         ["thinking", "soch raha", "soch rahi", "i'll think", "ill think",
+                          "let me think", "will think about it"],
+    "already_learning": ["already learning", "already enrolled elsewhere", "already doing a course",
+                          "kahi aur se seekh raha", "kahi aur se kar raha", "already taking a course"],
+}
+
+_OBJECTION_REPLIES = {
+    "expensive": {
+        "English": ("💡 Totally fair. The fee (GST included) is a one-time cost that covers a certificate, "
+                    "internship, and real projects — no hidden charges. I don't have a confirmed discount to offer, "
+                    "but I can connect you with our counsellor to see what's possible."),
+        "Hindi":   ("💡 समझ सकता हूँ। Fee (GST included) एक बार का cost है, जिसमें certificate, internship और real "
+                    "projects शामिल हैं — कोई hidden charge नहीं। Confirmed discount नहीं है, पर counsellor से बात "
+                    "करवा सकता हूँ।"),
+        "Hinglish":("💡 Samajh sakta hoon. Fee (GST included) ek baar ka cost hai, jisme certificate, internship "
+                    "aur real projects included hain — koi hidden charge nahi. Confirmed discount nahi hai, par "
+                    "counsellor se baat karva sakta hoon."),
+    },
+    "parents_permission": {
+        "English": ("👨‍👩‍👧 Totally understandable — this is a real decision. I can share full program details "
+                    "(company info, certificate, internship, real projects) that you can show your parents, or "
+                    "connect them directly with our counsellor for any questions they have."),
+        "Hindi":   ("👨‍👩‍👧 बिल्कुल समझ सकता हूँ — यह एक real decision है। मैं पूरी details (company info, "
+                    "certificate, internship, real projects) दे सकता हूँ जो parents को दिखा सकते हैं, या counsellor "
+                    "से सीधे बात करवा सकता हूँ।"),
+        "Hinglish":("👨‍👩‍👧 Bilkul samajh sakta hoon — yeh ek real decision hai. Main poori details (company info, "
+                    "certificate, internship, real projects) de sakta hoon jo parents ko dikha sakte ho, ya "
+                    "counsellor se seedha baat karva sakta hoon."),
+    },
+    "need_time": {
+        "English": ("⏳ No rush at all — since it's fully self-paced, there's no deadline pressure once you do "
+                    "enroll either. Take your time deciding, I'm here whenever you have questions."),
+        "Hindi":   ("⏳ कोई जल्दी नहीं — enroll करने के बाद भी सब कुछ self-paced है, कोई deadline pressure नहीं। "
+                    "अपना समय लीजिए, सवाल हो तो बताइए।"),
+        "Hinglish":("⏳ Koi jaldi nahi — enroll karne ke baad bhi sab kuch self-paced hai, koi deadline pressure "
+                    "nahi. Apna time lo, sawaal ho toh batao."),
+    },
+    "thinking": {
+        "English": ("🙂 Of course, take your time. Meanwhile, is there anything specific holding you back — "
+                    "price, syllabus, or something else — that I could clarify?"),
+        "Hindi":   ("🙂 बिल्कुल, अपना समय लीजिए। बीच में अगर कोई specific सवाल हो — price, syllabus, या कुछ और — "
+                    "तो बताइए।"),
+        "Hinglish":("🙂 Bilkul, apna time lo. Beech mein agar koi specific sawaal ho — price, syllabus, ya kuch "
+                    "aur — toh batao."),
+    },
+    "already_learning": {
+        "English": ("👍 That's great that you're already learning! Our programs stand out with a certificate, "
+                    "genuine internship, and real hands-on projects on top of the fundamentals — happy to show how "
+                    "it could complement what you're already doing."),
+        "Hindi":   ("👍 बढ़िया कि आप already सीख रहे हैं! हमारे programs certificate, genuine internship और real "
+                    "hands-on projects के साथ अलग हैं — बता सकता हूँ यह कैसे complement कर सकता है।"),
+        "Hinglish":("👍 Badhiya ki aap already seekh rahe ho! Hamare programs certificate, genuine internship aur "
+                    "real hands-on projects ke saath alag hain — bata sakta hoon yeh kaise complement kar sakta hai."),
+    },
+}
+
+
+def objection_subtype(text: str):
+    """Best-effort classification of *why* someone is objecting, checked in a
+    fixed priority order (most specific first). Returns a subtype key or
+    None if no specific sub-signal is found (caller should fall back to the
+    generic 'objection' FAQ answer)."""
+    t = (text or "").lower()
+    for subtype in ("parents_permission", "already_learning", "expensive",
+                     "thinking", "need_time"):
+        for kw in OBJECTION_KEYWORDS.get(subtype, []):
+            if kw in t:
+                return subtype
+    return None
+
+
+def objection_answer(subtype: str, language: str) -> str:
+    entry = _OBJECTION_REPLIES.get(subtype)
+    if not entry:
+        return ""
+    return entry.get(language, entry.get("English", ""))
+
+
+# --------------------------------------------------------------------------- #
+# Background / audience detection
+# --------------------------------------------------------------------------- #
+BACKGROUND_KEYWORDS = {
+    "commerce": ["commerce", "bcom", "b.com", "b com"],
+    "arts":     ["arts", "ba student", "humanities", "b.a", "main arts"],
+    "science":  ["science", "bsc", "b.sc", "pcm", "pcb", "main science"],
+    "bca":      ["bca"],
+    "mba":      ["mba"],
+}
+
+GOAL_KEYWORDS = {
+    "job":            ["job", "naukri", "placement", "salary", "employment"],
+    "freelancing":    ["freelance", "freelancing", "freelancer"],
+    "higher_studies": ["higher studies", "masters", "further studies", "phd", "study abroad"],
+    "business":       ["own business", "apna business", "startup", "entrepreneur"],
+}
+
+
+def detect_background(text: str):
+    t = (text or "").lower()
+    for key, kws in BACKGROUND_KEYWORDS.items():
+        for kw in kws:
+            if re.search(r"(?<!\w)" + re.escape(kw) + r"(?!\w)", t):
+                return key
+    return None
+
+
+def detect_goal(text: str):
+    t = (text or "").lower()
+    for key, kws in GOAL_KEYWORDS.items():
+        for kw in kws:
+            if kw in t:
+                return key
+    return None
+
+
+# --------------------------------------------------------------------------- #
+# Semantic / fuzzy fallback layer — never say "I don't know" until we've
+# tried (1) exact keyword intents, (2) typo-tolerant fuzzy matching, (3)
+# token-overlap semantic similarity, and only then (4) human handoff.
+# Zero extra dependencies (stdlib difflib only).
+# --------------------------------------------------------------------------- #
+from difflib import SequenceMatcher, get_close_matches
+
+_ALL_PHRASES = [(kw, intent) for intent, kws in INTENT_KEYWORDS.items() for kw in kws]
+_ALL_PHRASE_TEXT = [p for p, _ in _ALL_PHRASES]
+
+
+def _fuzzy_match(text: str, threshold: float = 0.84):
+    """Typo-tolerant pass: catches things like 'certifcate' or 'placment'
+    that literal matching would miss."""
+    if not text:
+        return set()
+    t = text.lower().strip()
+    found = set()
+
+    close = get_close_matches(t, _ALL_PHRASE_TEXT, n=3, cutoff=threshold)
+    for phrase in close:
+        for p, intent in _ALL_PHRASES:
+            if p == phrase:
+                found.add(intent)
+
+    words = re.findall(r"[a-zA-Z]+", t)
+    short_phrases = [(p, i) for p, i in _ALL_PHRASES if " " not in p and len(p) > 3]
+    for w in words:
+        for p, intent in short_phrases:
+            if SequenceMatcher(None, w, p).ratio() >= threshold:
+                found.add(intent)
+    return found
+
+
+def _semantic_match(text: str, min_overlap: int = 2):
+    """Coarse semantic pass: scores every intent by keyword *token* overlap
+    with the message, so mixed word order / Hinglish phrasing still lands on
+    the right intent. Returns the single best-scoring intent if it clears
+    `min_overlap`, else empty."""
+    t = (text or "").lower()
+    tokens = set(re.findall(r"[a-zA-Z]+", t))
+    if not tokens:
+        return set()
+
+    best_intent, best_score = None, 0
+    for intent, kws in INTENT_KEYWORDS.items():
+        kw_tokens = set()
+        for kw in kws:
+            kw_tokens.update(re.findall(r"[a-zA-Z]+", kw.lower()))
+        overlap = len(tokens & kw_tokens)
+        if overlap > best_score:
+            best_intent, best_score = intent, overlap
+
+    if best_intent and best_score >= min_overlap:
+        return {best_intent}
+    return set()
+
+
+def detect_intents_smart(text: str):
+    """Full detection pipeline: exact keyword match first (cheap, precise),
+    then typo-tolerant fuzzy match, then coarse semantic overlap. Stops as
+    soon as a stage finds something."""
+    intents = detect_intents(text)
+    if intents:
+        return intents
+    intents = _fuzzy_match(text)
+    if intents:
+        return intents
+    return _semantic_match(text)
