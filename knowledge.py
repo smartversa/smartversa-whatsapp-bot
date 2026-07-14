@@ -316,6 +316,66 @@ INTENT_KEYWORDS = {
                     "ml", "data science", "seo", "meta ads", "google ads", "analytics tool",
                     "which tools", "what tools", "which software", "kaunse tools",
                     "kaunsa software"],
+
+    # ---------------------------------------------------------------- #
+    # Why SmartVersa / Value / Closing / Comparison / Psychology (new)
+    # ---------------------------------------------------------------- #
+    "why_smartversa": ["why smartversa", "why should i join smartversa", "why choose smartversa",
+                    "what makes smartversa different", "smartversa kyun", "smartversa kyu",
+                    "smartversa alag kaise", "why join you", "why you", "why this company",
+                    "kyun join karu smartversa", "smartversa special kyun", "smartversa best kyun",
+                    "usp of smartversa", "smartversa ka usp"],
+    "value_for_money": ["value for money", "worth it", "is it worth", "worth the price",
+                    "paise vasool", "paisa vasool", "sahi price hai kya", "kya ye worth hai",
+                    "is this worth", "value milega", "value milegi", "kitna value hai",
+                    "kya fayda hoga", "kya milega isme", "reasonable price hai kya"],
+    "why_join": ["why should i join", "why join this course", "should i join", "should i enroll",
+                    "kyun join karu", "join karu kya", "enroll karu kya", "kya join karna chahiye",
+                    "is it good to join", "should i take this course", "join karna sahi rahega"],
+    "closing": ["let's start", "lets start", "i want to join", "i want to enroll", "book my seat",
+                    "reserve my seat", "kaise enroll karu abhi", "main join karna chahta hoon",
+                    "main join karna chahti hoon", "ready to join", "ready to enroll",
+                    "send me payment link", "payment link bhejo", "link bhejo", "kaise pay karu",
+                    "i am ready", "main ready hoon", "chalo enroll karte hain", "final kar dete hain"],
+    "competitor_comparison": ["other institutes", "other platforms", "coursera", "udemy",
+                    "internshala", "great learning", "other courses", "dusre institute",
+                    "aur platforms", "compare with other", "better than other", "kyun aapse lu",
+                    "kyun aap se lu", "why not other platform", "market me aur bhi hain",
+                    "other companies bhi hain"],
+    "student_psychology": ["will i regret", "kya pachtaunga", "kya pachtaungi", "confused kya karu",
+                    "samajh nahi aa raha", "dar lag raha hai", "scared to invest", "risk lagta hai",
+                    "sahi decision hoga kya", "galat decision to nahi", "dubidha", "confusion hai"],
+    "common_objections": ["socha hi nahi", "abhi decide nahi kiya", "aur options dekh raha",
+                    "aur options dekh rahi", "pehle research karna hai", "friend se pooch ke batata",
+                    "friend se pooch ke bataungi", "abhi mood nahi", "baad me dekhta hoon",
+                    "baad me dekhti hoon"],
+    "followup": ["any update", "koi update", "reply nahi diya", "waiting for reply",
+                    "still there", "are you there", "kya hua", "kuch bataya nahi",
+                    "follow up", "followup", "pichla message", "wapas message"],
+    "job_ready_time": ["kitne time me job ready", "how long to get job ready", "job ready kab tak",
+                    "kitne mahine me ready", "skills kab tak aa jayengi", "kab tak seekh lunga",
+                    "kab tak seekh lungi"],
+    "practical_projects": ["practical project", "real world project", "kitne projects milenge",
+                    "how many projects", "hands on work", "practical work milega",
+                    "project based learning"],
+    "beginner_confidence": ["mujhe kuch nahi aata", "zero knowledge", "bilkul beginner",
+                    "starting from zero", "shuru se karna hai", "no background at all",
+                    "can a complete beginner do this", "puri beginner hoon"],
+    "resume_ats": ["ats resume", "ats friendly resume", "resume score", "resume format",
+                    "professional resume", "resume banwana hai", "resume kaise improve karu"],
+    "career_switch": ["career switch", "career change", "switch karna hai", "field change karna hai",
+                    "non tech se tech me", "career badalna hai", "profession change"],
+    "part_time_study": ["part time study", "job ke sath", "job ke saath karu", "college ke sath",
+                    "college ke saath", "time nahi milta padhne ka", "busy schedule me kaise"],
+    "is_ai_good": ["is ai course good", "ai course achha hai kya", "ai data science worth it",
+                    "should i choose ai course", "ai course sahi rahega kya"],
+    "is_dm_good": ["is digital marketing good", "dm course achha hai kya",
+                    "digital marketing worth it", "should i choose dm course",
+                    "digital marketing sahi rahega kya"],
+    "payment_security": ["is payment safe", "payment safe hai kya", "card details safe",
+                    "secure payment hai kya", "razorpay safe hai kya", "payment fraud dar"],
+    "refund_process": ["how to get refund", "refund kaise milega", "refund process kya hai",
+                    "refund apply kaise karu", "refund ke liye kya karu"],
 }
 
 # Scoring per the brief — reflects buying intent strength
@@ -341,6 +401,24 @@ INTENT_SCORE = {
     "resume": 5,
     "linkedin": 5,
     "interview": 5,
+    "closing": 45,
+    "why_smartversa": 8,
+    "value_for_money": 10,
+    "why_join": 10,
+    "competitor_comparison": 8,
+    "student_psychology": 5,
+    "common_objections": 5,
+    "followup": 10,
+    "job_ready_time": 8,
+    "practical_projects": 5,
+    "beginner_confidence": 5,
+    "resume_ats": 5,
+    "career_switch": 8,
+    "part_time_study": 5,
+    "is_ai_good": 8,
+    "is_dm_good": 8,
+    "payment_security": 15,
+    "refund_process": 10,
 }
 
 
@@ -451,17 +529,28 @@ def faq_answer(intent: str, language: str) -> str:
             "Hinglish":(f"✅ Yahan se enroll karo (Razorpay se secure payment, GST included):\n{Config.PAYMENT_URL}\n\n"
                         "Payment successful hote hi Razorpay confirm kar deta hai. Koi help chahiye toh batao."),
         },
-        "about": {
-            "English": (f"🏢 *{COMPANY['name']}* is an {COMPANY['registration']}, based in {COMPANY['location']}.\n"
-                        f"🌐 {COMPANY['website']}\n"
-                        f"📧 {COMPANY['support_email']}"),
-            "Hindi":   (f"🏢 *{COMPANY['name']}* एक {COMPANY['registration']} है, {COMPANY['location']} में based।\n"
-                        f"🌐 {COMPANY['website']}\n"
-                        f"📧 {COMPANY['support_email']}"),
-            "Hinglish":(f"🏢 *{COMPANY['name']}* ek {COMPANY['registration']} hai, {COMPANY['location']} mein based.\n"
-                        f"🌐 {COMPANY['website']}\n"
-                        f"📧 {COMPANY['support_email']}"),
+
+                "about": {
+            "English": (
+                f"🏢 *{COMPANY['name']}* is an {COMPANY['registration']}, based in {COMPANY['location']}.\n"
+                f"🌐 Website: {COMPANY['website']}\n"
+                f"💼 LinkedIn: https://www.linkedin.com/company/smartversa/\n"
+                f"📧 Email: {COMPANY['support_email']}"
+            ),
+            "Hindi": (
+                f"🏢 *{COMPANY['name']}* एक {COMPANY['registration']} है, {COMPANY['location']} में based।\n"
+                f"🌐 Website: {COMPANY['website']}\n"
+                f"💼 LinkedIn: https://www.linkedin.com/company/smartversa/\n"
+                f"📧 Email: {COMPANY['support_email']}"
+            ),
+            "Hinglish": (
+                f"🏢 *{COMPANY['name']}* ek {COMPANY['registration']} hai, {COMPANY['location']} mein based.\n"
+                f"🌐 Website: {COMPANY['website']}\n"
+                f"💼 LinkedIn: https://www.linkedin.com/company/smartversa/\n"
+                f"📧 Email: {COMPANY['support_email']}"
+            ),
         },
+
         "support": {
             "English": (f"🙋 You can reach our support team:\n📧 {COMPANY['support_email']}\n"
                         f"📱 WhatsApp: {COMPANY['whatsapp_support']}\n"
@@ -581,11 +670,13 @@ def faq_answer(intent: str, language: str) -> str:
             "Hinglish":("💪 Badhiya! Chunki yeh fully self-paced hai, jo pehle se aata hai wo fast cover kar sakte ho aur projects, "
                         "certificate, internship pe focus kar sakte ho — yeh aapki schedule/job ke saath bhi fit ho jaata hai."),
         },
+        
         "demo": {
-            "English": "🎬 I don't have confirmed details on a free demo/trial class. Let me connect you with a counsellor who can help with that.",
-            "Hindi":   "🎬 Free demo/trial class के बारे में confirmed detail मेरे पास नहीं है। मैं counsellor से connect करवा देता हूँ।",
-            "Hinglish":"🎬 Free demo/trial class ke baare mein confirmed detail mere paas nahi hai. Main counsellor se connect karva deta hoon.",
+            "English": "🎬 Currently, we don't offer a free demo class. However, if you have any questions about the internship, syllabus, or learning process, I'd be happy to help.",
+            "Hindi": "🎬 फिलहाल हम free demo class प्रदान नहीं करते। लेकिन internship, syllabus या learning process से जुड़ा कोई भी सवाल हो, तो मैं आपकी मदद कर सकता हूँ।",
+            "Hinglish": "🎬 Filhaal hum free demo class provide nahi karte. Lekin internship, syllabus ya learning process se related koi bhi question ho, main aapki help kar sakta hoon.",
         },
+
         "thanks": {
             "English": "You're welcome! 😊 Let me know if you have any other questions.",
             "Hindi":   "आपका स्वागत है! 😊 कोई और सवाल हो तो बताइए।",
@@ -663,31 +754,23 @@ def faq_answer(intent: str, language: str) -> str:
             "Hinglish":("🧑‍🏫 Aapko structured recorded lessons, real projects, aur doubts ke liye team support milta "
                         "hai. 1:1 mentor assignment ki confirmed detail nahi hai — chaho toh counsellor se pooch sakta hoon."),
         },
+
         "emi": {
-            "English": ("💳 I don't have confirmed EMI/installment details right now — payment is currently via a "
-                        "single secure Razorpay transaction. I can connect you with our team to check if part-payment "
-                        "is possible for your case."),
-            "Hindi":   ("💳 EMI/installment की confirmed detail अभी मेरे पास नहीं है — payment अभी single Razorpay "
-                        "transaction से होती है। चाहें तो team से पूछ के बताता हूँ।"),
-            "Hinglish":("💳 EMI/installment ki confirmed detail abhi mere paas nahi hai — payment abhi single Razorpay "
-                        "transaction se hoti hai. Chaho toh team se pooch ke batata hoon."),
+            "English": "💳 Currently, EMI or installment payment is not available. Payment needs to be completed in a single transaction through our secure Razorpay payment gateway.",
+            "Hindi": "💳 फिलहाल EMI या installment की सुविधा उपलब्ध नहीं है। Payment Razorpay के माध्यम से एक ही transaction में करनी होगी।",
+            "Hinglish": "💳 Filhaal EMI ya installment facility available nahi hai. Payment Razorpay ke through ek hi transaction mein karni hogi.",
         },
+
         "discount": {
-            "English": ("🏷️ The listed price (GST included) is our standard fee. I don't "
-                        "have any confirmed discount/coupon running right now — I can connect you with our counsellor "
-                        "to check if anything's available."),
-            "Hindi":   ("🏷️ Listed price ही हमारी standard fee है (GST included)। अभी कोई confirmed discount/coupon "
-                        "नहीं है — counsellor से check करवा सकता हूँ।"),
-            "Hinglish":("🏷️ Listed price hi hamari standard fee hai (GST included). Abhi koi confirmed discount/coupon "
-                        "nahi hai — counsellor se check karva sakta hoon."),
+            "English": "🏷️ We currently don't offer any discounts or coupon codes. Our fees are already kept affordable while including projects, certificates, mentorship, and career support.",
+            "Hindi": "🏷️ फिलहाल कोई discount या coupon उपलब्ध नहीं है। हमारी fees पहले से ही affordable रखी गई है, जिसमें projects, certificates, mentorship और career support शामिल हैं।",
+            "Hinglish": "🏷️ Filhaal koi discount ya coupon available nahi hai. Hamari fees pehle se hi affordable rakhi gayi hai, jisme projects, certificates, mentorship aur career support included hain.",
         },
+
         "scholarship": {
-            "English": ("🎓 I don't have confirmed details on a scholarship or fee-waiver program right now. "
-                        "I can connect you with our counsellor to check if you qualify for anything."),
-            "Hindi":   ("🎓 Scholarship/fee-waiver की confirmed detail अभी मेरे पास नहीं है। चाहें तो counsellor से "
-                        "check करवा दूँ।"),
-            "Hinglish":("🎓 Scholarship/fee-waiver ki confirmed detail abhi mere paas nahi hai. Chaho toh counsellor "
-                        "se check karva doon."),
+            "English": "🎓 We currently do not offer any scholarship or fee-waiver program. Our courses are already priced to be affordable for students.",
+            "Hindi": "🎓 फिलहाल हम कोई scholarship या fee-waiver program प्रदान नहीं करते। हमारी courses की fees पहले से ही students के लिए affordable रखी गई है।",
+            "Hinglish": "🎓 Filhaal hum koi scholarship ya fee-waiver program provide nahi karte. Hamare courses ki fees pehle se hi students ke liye affordable rakhi gayi hai.",
         },
         "audience_fit": {
             "English": ("🙌 Both programs work well whether you're a student, working professional, homemaker, fresher, "
@@ -816,6 +899,149 @@ def faq_answer(intent: str, language: str) -> str:
                         "।\nDigital Marketing में: " + ", ".join(dm["tools"]) + "।"),
             "Hinglish":("🛠️ AI & Data Science mein: " + ", ".join(ai["tools"]) +
                         ".\nDigital Marketing mein: " + ", ".join(dm["tools"]) + "."),
+        },
+        "why_smartversa": {
+            "English": ("🌟 SmartVersa gives certificate, real internship, hands-on projects and career "
+                        "support — all self-paced, at an honest price. Would you like to know more?"),
+            "Hindi":   ("🌟 SmartVersa में certificate, real internship, hands-on projects और career support "
+                        "मिलता है — वो भी self-paced और honest price पर। और जानना चाहेंगे?"),
+            "Hinglish":("🌟 SmartVersa mein certificate, real internship, hands-on projects aur career support "
+                        "milta hai — wo bhi self-paced aur honest price par. Aur jaanna chahoge?"),
+        },
+        "value_for_money": {
+            "English": (f"💡 For ₹{ai['price']}–₹{dm['price']}, you get certificate, internship, real projects "
+                        "and career support — genuine value, not just a video course. Would you like the syllabus?"),
+            "Hindi":   (f"💡 ₹{ai['price']}–₹{dm['price']} में certificate, internship, real projects और career "
+                        "support मिलता है — सिर्फ video course नहीं। Syllabus देखना चाहेंगे?"),
+            "Hinglish":(f"💡 ₹{ai['price']}–₹{dm['price']} mein certificate, internship, real projects aur career "
+                        "support milta hai — sirf video course nahi. Syllabus dekhna chahoge?"),
+        },
+        "why_join": {
+            "English": ("✅ If you want practical skills, a certificate, internship and career support at an "
+                        "affordable price — this is built for that. Can I help you choose the right program?"),
+            "Hindi":   ("✅ अगर practical skills, certificate, internship और career support चाहिए — यह इसी के "
+                        "लिए बना है। सही program चुनने में मदद करूँ?"),
+            "Hinglish":("✅ Agar practical skills, certificate, internship aur career support chahiye — yeh isi "
+                        "ke liye bana hai. Sahi program choose karne mein madad karun?"),
+        },
+        "closing": {
+            "English": (f"🎯 Great, let's get you started! You can enroll securely here:\n{Config.PAYMENT_URL}\n"
+                        "GST is already included — need help completing it?"),
+            "Hindi":   (f"🎯 बढ़िया, शुरू करते हैं! यहाँ से secure enroll करें:\n{Config.PAYMENT_URL}\n"
+                        "GST included है — payment complete करने में मदद चाहिए?"),
+            "Hinglish":(f"🎯 Badhiya, shuru karte hain! Yahan se secure enroll karo:\n{Config.PAYMENT_URL}\n"
+                        "GST included hai — payment complete karne mein madad chahiye?"),
+        },
+        "competitor_comparison": {
+            "English": ("🤝 Other platforms may look similar, but SmartVersa focuses on real internships, "
+                        "practical projects and personal career support — not just recorded videos. Would "
+                        "you like to know more?"),
+            "Hindi":   ("🤝 दूसरे platforms भी हैं, पर SmartVersa real internship, practical projects और personal "
+                        "career support पर focus करता है — सिर्फ videos नहीं। और जानना चाहेंगे?"),
+            "Hinglish":("🤝 Dusre platforms bhi hain, par SmartVersa real internship, practical projects aur "
+                        "personal career support par focus karta hai — sirf videos nahi. Aur jaanna chahoge?"),
+        },
+        "student_psychology": {
+            "English": ("🙂 That hesitation is normal before any decision. The course is self-paced and low-cost, "
+                        "so the risk is small — the skills, certificate and internship stay with you either way."),
+            "Hindi":   ("🙂 Decision से पहले ऐसा सोचना normal है। Course self-paced और affordable है, risk कम है — "
+                        "skills, certificate और internship हमेशा आपके साथ रहेंगे।"),
+            "Hinglish":("🙂 Decision se pehle aisa sochna normal hai. Course self-paced aur affordable hai, risk "
+                        "kam hai — skills, certificate aur internship hamesha aapke saath rahenge."),
+        },
+        "common_objections": {
+            "English": ("🙂 Totally fair to want to research first. Happy to share full syllabus and company "
+                        "details so you can decide with confidence — want me to send that?"),
+            "Hindi":   ("🙂 पहले research करना बिल्कुल सही है। पूरी syllabus और company details भेज सकता हूँ ताकि "
+                        "confidently decide कर सकें — भेजूँ?"),
+            "Hinglish":("🙂 Pehle research karna bilkul sahi hai. Poori syllabus aur company details bhej sakta "
+                        "hoon taaki confidently decide kar sako — bheju?"),
+        },
+        "followup": {
+            "English": ("👋 Yes, I'm here! Sorry for the delay. How can I help — price, syllabus, or ready to "
+                        "enroll?"),
+            "Hindi":   ("👋 हाँ, मैं यहीं हूँ! देरी के लिए sorry। बताइए — price, syllabus, या enroll करना है?"),
+            "Hinglish":("👋 Haan, main yahin hoon! Delay ke liye sorry. Batao — price, syllabus, ya enroll karna hai?"),
+        },
+        "job_ready_time": {
+            "English": ("⏱️ Since it's self-paced, timeline depends on you — many students complete it in a few "
+                        "focused weeks. Would you like the syllabus to plan your pace?"),
+            "Hindi":   ("⏱️ Self-paced होने से timeline आप पर depend करता है — कई students कुछ हफ्तों में complete "
+                        "कर लेते हैं। Pace plan करने के लिए syllabus चाहिए?"),
+            "Hinglish":("⏱️ Self-paced hone se timeline aap par depend karta hai — kai students kuch hafton mein "
+                        "complete kar lete hain. Pace plan karne ke liye syllabus chahiye?"),
+        },
+        "practical_projects": {
+            "English": (f"🛠️ AI & Data Science includes {len(ai['projects'])} project(s), Digital Marketing "
+                        f"includes {len(dm['projects'])} — all hands-on and portfolio-worthy."),
+            "Hindi":   (f"🛠️ AI & Data Science में {len(ai['projects'])} project, Digital Marketing में "
+                        f"{len(dm['projects'])} projects हैं — सब hands-on और portfolio-worthy।"),
+            "Hinglish":(f"🛠️ AI & Data Science mein {len(ai['projects'])} project, Digital Marketing mein "
+                        f"{len(dm['projects'])} projects hain — sab hands-on aur portfolio-worthy."),
+        },
+        "beginner_confidence": {
+            "English": ("💪 Both programs start from absolute basics — no prior knowledge needed. Thousands "
+                        "start at zero too. Would you like to see the beginner modules?"),
+            "Hindi":   ("💪 दोनों programs बिल्कुल basics से शुरू होते हैं — कोई prior knowledge ज़रूरी नहीं। "
+                        "Beginner modules देखना चाहेंगे?"),
+            "Hinglish":("💪 Dono programs bilkul basics se shuru hote hain — koi prior knowledge zaroori nahi. "
+                        "Beginner modules dekhna chahoge?"),
+        },
+        "resume_ats": {
+            "English": ("📄 Resume Review is part of our career support — we help you present your projects "
+                        "and skills clearly. Would you like to know more?"),
+            "Hindi":   ("📄 Resume Review हमारे career support का हिस्सा है — projects और skills clearly present "
+                        "करने में मदद मिलती है। और जानना चाहेंगे?"),
+            "Hinglish":("📄 Resume Review hamare career support ka hissa hai — projects aur skills clearly "
+                        "present karne mein madad milti hai. Aur jaanna chahoge?"),
+        },
+        "career_switch": {
+            "English": ("🔄 Many students use these programs to switch fields — no coding or prior background "
+                        "needed. Can I help you pick the right track for your goal?"),
+            "Hindi":   ("🔄 कई students field switch करने के लिए यह करते हैं — कोई coding या background ज़रूरी "
+                        "नहीं। सही track चुनने में मदद करूँ?"),
+            "Hinglish":("🔄 Kai students field switch karne ke liye yeh karte hain — koi coding ya background "
+                        "zaroori nahi. Sahi track choose karne mein madad karun?"),
+        },
+        "part_time_study": {
+            "English": ("⏳ It's fully self-paced and recorded, so you can study around your job or college "
+                        "hours — whenever you have time."),
+            "Hindi":   ("⏳ पूरी तरह self-paced और recorded है, तो job या college के साथ भी अपने time पर पढ़ "
+                        "सकते हैं।"),
+            "Hinglish":("⏳ Poori tarah self-paced aur recorded hai, toh job ya college ke saath bhi apne time "
+                        "par padh sakte ho."),
+        },
+        "is_ai_good": {
+            "English": ("🤖 AI & Data Science is great if you like numbers, tools like Python/SQL/Power BI, "
+                        "and analytical roles. Would you like the full syllabus?"),
+            "Hindi":   ("🤖 AI & Data Science अच्छा है अगर numbers, Python/SQL/Power BI जैसे tools और analytical "
+                        "roles पसंद हैं। पूरी syllabus चाहिए?"),
+            "Hinglish":("🤖 AI & Data Science achha hai agar numbers, Python/SQL/Power BI jaise tools aur "
+                        "analytical roles pasand hain. Poori syllabus chahiye?"),
+        },
+        "is_dm_good": {
+            "English": ("📈 Digital Marketing is great if you enjoy content, social media and creativity, or "
+                        "want to freelance. Would you like the full syllabus?"),
+            "Hindi":   ("📈 Digital Marketing अच्छा है अगर content, social media और creativity पसंद है, या "
+                        "freelance करना है। पूरी syllabus चाहिए?"),
+            "Hinglish":("📈 Digital Marketing achha hai agar content, social media aur creativity pasand hai, "
+                        "ya freelance karna hai. Poori syllabus chahiye?"),
+        },
+        "payment_security": {
+            "English": (f"🔒 Payments go through {PAYMENT_INFO['gateway']}, a secure and trusted gateway — your "
+                        "card/UPI details are never stored by us."),
+            "Hindi":   (f"🔒 Payment {PAYMENT_INFO['gateway']} से होता है, जो secure और trusted gateway है — "
+                        "card/UPI details हमारे पास store नहीं होतीं।"),
+            "Hinglish":(f"🔒 Payment {PAYMENT_INFO['gateway']} se hota hai, jo secure aur trusted gateway hai — "
+                        "card/UPI details hamare paas store nahi hoti."),
+        },
+        "refund_process": {
+            "English": (f"🔁 {REFUND_POLICY} Share your reason with our support team and we'll review it "
+                        "promptly."),
+            "Hindi":   ("🔁 Refund सिर्फ valid और genuine reasons पर, review के बाद मिलता है। अपना reason support "
+                        "team को बताइए, जल्दी review होगा।"),
+            "Hinglish":("🔁 Refund sirf valid aur genuine reasons par, review ke baad milta hai. Apna reason "
+                        "support team ko batao, jaldi review hoga."),
         },
     }
 
