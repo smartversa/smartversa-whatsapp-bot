@@ -534,19 +534,19 @@ def faq_answer(intent: str, language: str) -> str:
             "English": (
                 f"🏢 *{COMPANY['name']}* is an {COMPANY['registration']}, based in {COMPANY['location']}.\n"
                 f"🌐 Website: {COMPANY['website']}\n"
-                f"💼 LinkedIn: https://www.linkedin.com/company/smartversa/\n"
+                f"💼 LinkedIn: https://www.linkedin.com/company/smart-versa//\n"
                 f"📧 Email: {COMPANY['support_email']}"
             ),
             "Hindi": (
                 f"🏢 *{COMPANY['name']}* एक {COMPANY['registration']} है, {COMPANY['location']} में based।\n"
                 f"🌐 Website: {COMPANY['website']}\n"
-                f"💼 LinkedIn: https://www.linkedin.com/company/smartversa/\n"
+                f"💼 LinkedIn: https://www.linkedin.com/company/smart-versa//\n"
                 f"📧 Email: {COMPANY['support_email']}"
             ),
             "Hinglish": (
                 f"🏢 *{COMPANY['name']}* ek {COMPANY['registration']} hai, {COMPANY['location']} mein based.\n"
                 f"🌐 Website: {COMPANY['website']}\n"
-                f"💼 LinkedIn: https://www.linkedin.com/company/smartversa/\n"
+                f"💼 LinkedIn: https://www.linkedin.com/company/smart-versa/\n"
                 f"📧 Email: {COMPANY['support_email']}"
             ),
         },
